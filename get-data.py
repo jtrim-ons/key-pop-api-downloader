@@ -1,24 +1,35 @@
 import gzip
 import itertools
+import re
 import requests
 import time
 
-url_pattern = "https://api.beta.ons.gov.uk/v1/population-types/UR/census-observations?area-type=nat&dimensions={}&limit=1000000"
+url_pattern = "https://api.beta.ons.gov.uk/v1/population-types/UR/census-observations?area-type=nat&dimensions={}&limit=10000000"
 
-with open('classifications.txt', 'r') as f:
-    classifications = f.read().splitlines()
+def remove_classification_number(c):
+    return re.sub(r'_[0-9]{1,3}[a-z]$', '', c)
 
-classifications.sort()
+with open('output-classifications.txt', 'r') as f:
+    output_classifications = f.read().splitlines()
+output_classifications.sort()
 
-for num_vars in range(2, 3):
-    classification_combinations = [c for c in itertools.combinations(classifications, num_vars)]
-    for i, c in enumerate(classification_combinations):
-        c_str = ",".join(c)
-        print("{} var: Downloading {} of {} ({})".format(num_vars, i+1, len(classification_combinations), c_str))
-        url = url_pattern.format(c_str)
-        response = requests.get(url, stream=True)
-        response_bytes = response.content
-        compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(num_vars, c_str.replace(',', '-'))
-        with gzip.open(compressed_file_path, 'wb') as f:
-            f.write(response_bytes)
-        time.sleep(0.5)
+with open('input-classifications.txt', 'r') as f:
+    input_classifications = f.read().splitlines()
+input_classifications.sort()
+
+for num_vars in range(0, 3):
+    input_classification_combinations = [c for c in itertools.combinations(input_classifications, num_vars)]
+    for i, cc in enumerate(input_classification_combinations):
+        for j, c in enumerate(output_classifications if num_vars > 0 else list(set(input_classifications + output_classifications))):
+            if remove_classification_number(c) in [remove_classification_number(c_) for c_ in cc]:
+                # The API won't give data for two versions of the same variable
+                continue
+            c_str = ",".join(list(cc) + [c])
+            print("{} var: Downloading {} of {} ({})".format(num_vars, i+1, len(input_classification_combinations), c_str))
+            url = url_pattern.format(c_str)
+            response = requests.get(url, stream=True)
+            response_bytes = response.content
+            compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(num_vars, c_str.replace(',', '-'))
+            with gzip.open(compressed_file_path, 'wb') as f:
+                f.write(response_bytes)
+            time.sleep(0.5)
