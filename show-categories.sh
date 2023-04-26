@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-for f in input-classifications.txt output-classifications.txt; do
+for f in input-txt-files/input-classifications.txt input-txt-files/output-classifications.txt; do
     echo '========================================='
     echo '  ' $f
     echo '========================================='
