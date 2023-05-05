@@ -1,0 +1,23 @@
+[
+    "resident_age_18b",
+    "sex",
+    "legal_partnership_status_6a",
+    "country_of_birth_3a",
+    "passports_all_4a",
+    "residence_length_6b",
+    "ethnic_group_tb_6a",
+    "national_identity_all_4a",
+    "religion_tb",
+    "health_in_general",
+    "disability_3a",
+    "is_carer_5a",
+    "english_proficiency",
+    "workplace_travel_5a",
+    "transport_to_workplace_12a",
+    "economic_activity_status_4a",
+    "has_ever_worked",
+    "occupation_current_10a",
+    "ns_sec_10a",
+    "hours_per_week_worked",
+    "highest_qualification"
+]
