@@ -9,6 +9,7 @@ for d in downloaded generated; do
     mkdir -p $d/1var
     mkdir -p $d/2var
     mkdir -p $d/3var
+    mkdir -p $d/0var-by-ltla
     mkdir -p $d/1var-by-ltla
     mkdir -p $d/2var-by-ltla
     mkdir -p $d/3var-by-ltla

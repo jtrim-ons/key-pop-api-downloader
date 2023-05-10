@@ -1,3 +1,4 @@
+import copy
 import gzip
 import itertools
 import json
@@ -82,3 +83,20 @@ for num_vars in range(1, 4):
             json_bytes = f.read()
         data = data_to_lookup(json.loads(json_bytes.decode('utf-8')))
         process_data(data, cc)
+
+# Finally, add male and female counts to give total population
+filenames_by_sex = [
+    "generated/1var-by-ltla/sex-1_by_geog.json",
+    "generated/1var-by-ltla/sex-2_by_geog.json"
+]
+totals_filename = 'generated/0var-by-ltla/data.json'
+data_by_sex = []
+for filename in filenames_by_sex:
+    with open(filename, 'r') as f:
+        data = json.load(f)
+        data_by_sex.append(data)
+totals = copy.deepcopy(data_by_sex[0])
+for key in totals:
+    totals[key] += data_by_sex[1][key]
+with open(totals_filename, 'w') as f:
+    json.dump(totals, f)
