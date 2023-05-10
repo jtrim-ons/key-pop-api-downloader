@@ -89,7 +89,7 @@ filenames_by_sex = [
     "generated/1var-by-ltla/sex-1_by_geog.json",
     "generated/1var-by-ltla/sex-2_by_geog.json"
 ]
-totals_filename = 'generated/0var-by-ltla/data.json'
+totals_filename = 'generated/0var-by-ltla/data_by_geog.json'
 data_by_sex = []
 for filename in filenames_by_sex:
     with open(filename, 'r') as f:
