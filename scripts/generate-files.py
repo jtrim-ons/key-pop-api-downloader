@@ -45,8 +45,8 @@ def process_data(data, cc):
             for cat in output_categories:
                 datum_key = frozenset(
                     list(
-                        (cat_id, opt['id'])
-                        for cat_id, opt in zip(cc, category_list)
+                        (classification_id, opt['id'])
+                        for classification_id, opt in zip(cc, category_list)
                     ) + [(c, cat['id'])]
                 )
                 result[c][cat['id']] = dataset['data'][datum_key]
