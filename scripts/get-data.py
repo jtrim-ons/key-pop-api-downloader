@@ -1,12 +1,16 @@
 import gzip
 import itertools
+import os.path
 import re
 import requests
+import sys
 import time
 
 from key_pop_api_downloader import *
 
 url_pattern = "https://api.beta.ons.gov.uk/v1/population-types/UR/census-observations?area-type=nat&dimensions={}&limit=10000000"
+
+skip_existing_files = sys.argv[1] == '--skip-existing'
 
 with open('input-txt-files/output-classifications.txt', 'r') as f:
     output_classifications = f.read().splitlines()
@@ -24,11 +28,14 @@ for num_vars in range(0, 4):
                 # The API won't give data for two versions of the same variable
                 continue
             c_str = ",".join(list(cc) + [c])
+            compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(num_vars, c_str.replace(',', '-'))
+            if skip_existing_files and os.path.isfile(compressed_file_path):
+                print("{} var: Skipping existing file {} of {} ({})".format(num_vars, i+1, len(input_classification_combinations), c_str))
+                continue
             print("{} var: Downloading {} of {} ({})".format(num_vars, i+1, len(input_classification_combinations), c_str))
             url = url_pattern.format(c_str)
             response = requests.get(url, stream=True)
             response_bytes = response.content
-            compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(num_vars, c_str.replace(',', '-'))
             with gzip.open(compressed_file_path, 'wb') as f:
                 f.write(response_bytes)
             time.sleep(0.5)
