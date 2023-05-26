@@ -26,6 +26,19 @@ def generate_outfile_path(cc, category_list):
     return 'generated/{}var/{}.json'.format(len(cc), '-'.join(filename_elements))
 
 
+def make_datum_key(cc, category_list, c, cat):
+    datum_key = frozenset(
+        list(
+            (classification_id, opt['id'])
+            for classification_id, opt in zip(cc, category_list)
+            if (
+                remove_classification_number(c) != "resident_age"
+                or remove_classification_number(classification_id) != "resident_age"
+            )
+        ) + [(c, cat['id'])]
+    )
+    return datum_key
+
 def process_data(data, cc):
     # category_lists is a list of tuples like (1, 4), which means that the first
     # input variable has category 1 and the second input variable
@@ -43,12 +56,7 @@ def process_data(data, cc):
             output_categories = all_classifications[c]['categories']
             result[c] = {}
             for cat in output_categories:
-                datum_key = frozenset(
-                    list(
-                        (classification_id, opt['id'])
-                        for classification_id, opt in zip(cc, category_list)
-                    ) + [(c, cat['id'])]
-                )
+                datum_key = make_datum_key(cc, category_list, c, cat)
                 result[c][cat['id']] = dataset['data'][datum_key]
         with open(generate_outfile_path(cc, category_list), 'w') as f:
             json.dump(result, f)
@@ -71,6 +79,18 @@ def data_to_lookup(data):
     return lookup
 
 
+def make_c_str(cc, c):
+    # This is used to generate a file name for a list of input classifications and
+    # an output classification.  If the output classification is resident_age_23a,
+    # then any resident_age input classifications are deleted.
+    classifications = []
+    for c_ in list(cc):
+        if remove_classification_number(c) != "resident_age" or remove_classification_number(c_) != "resident_age":
+            classifications.append(c_)
+    classifications.append(c)
+    return len(classifications), ",".join(classifications)
+
+
 for num_vars in range(0, 4):
     input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
@@ -80,18 +100,20 @@ for num_vars in range(0, 4):
         else:
             classifications = list(set(input_classifications + output_classifications))
         for j, c in enumerate(classifications):
-            if remove_classification_number(c) in [
+            if remove_classification_number(c) != "resident_age" and remove_classification_number(c) in [
                 remove_classification_number(c_) for c_ in cc
             ]:
                 # The API won't give data for two versions of the same variable.
                 # Since we haven't downloaded it, we can't use it to generate files :-)
+                # The exception is for resident_age, which is a special case where
+                # we just use the data for 23 categories.
                 continue
-            c_str = ",".join(list(cc) + [c])
+            c_str_len, c_str = make_c_str(cc, c)
             print("{} var: Processing {} of {} ({})".format(
                 num_vars, i+1, len(input_classification_combinations), c_str)
             )
             compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(
-                num_vars, c_str.replace(',', '-')
+                c_str_len-1, c_str.replace(',', '-')
             )
             with gzip.open(compressed_file_path, 'r') as f:
                 json_bytes = f.read()
