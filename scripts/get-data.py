@@ -4,10 +4,9 @@ import re
 import requests
 import time
 
-url_pattern = "https://api.beta.ons.gov.uk/v1/population-types/UR/census-observations?area-type=nat&dimensions={}&limit=10000000"
+from key_pop_api_downloader import *
 
-def remove_classification_number(c):
-    return re.sub(r'_[0-9]{1,3}[a-z]$', '', c)
+url_pattern = "https://api.beta.ons.gov.uk/v1/population-types/UR/census-observations?area-type=nat&dimensions={}&limit=10000000"
 
 with open('input-txt-files/output-classifications.txt', 'r') as f:
     output_classifications = f.read().splitlines()
@@ -18,7 +17,7 @@ with open('input-txt-files/input-classifications.txt', 'r') as f:
 input_classifications.sort()
 
 for num_vars in range(0, 4):
-    input_classification_combinations = [c for c in itertools.combinations(input_classifications, num_vars)]
+    input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
         for j, c in enumerate(output_classifications if num_vars > 0 else list(set(input_classifications + output_classifications))):
             if remove_classification_number(c) in [remove_classification_number(c_) for c_ in cc]:

@@ -4,6 +4,9 @@ import re
 import requests
 import time
 
+from key_pop_api_downloader import *
+
+
 url_pattern = "https://api.beta.ons.gov.uk/v1/population-types/UR/census-observations?area-type=ltla&dimensions={}&limit=10000000"
 
 with open('input-txt-files/output-classifications.txt', 'r') as f:
@@ -15,7 +18,7 @@ with open('input-txt-files/input-classifications.txt', 'r') as f:
 input_classifications.sort()
 
 for num_vars in range(1, 4):
-    input_classification_combinations = [c for c in itertools.combinations(input_classifications, num_vars)]
+    input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
         c_str = ",".join(cc)
         print("{} var: Downloading {} of {} ({})".format(num_vars, i+1, len(input_classification_combinations), c_str))

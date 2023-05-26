@@ -4,9 +4,7 @@ import itertools
 import json
 import re
 
-
-def remove_classification_number(c):
-    return re.sub(r'_[0-9]{1,3}[a-z]$', '', c)
+from key_pop_api_downloader import *
 
 
 with open('generated/all-classifications.json', 'r') as f:
@@ -68,9 +66,7 @@ def data_to_lookup(data):
 
 
 for num_vars in range(1, 4):
-    input_classification_combinations = [
-        c for c in itertools.combinations(input_classifications, num_vars)
-    ]
+    input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
         c_str = ",".join(cc)
         print("{} var: Processing {} of {} ({})".format(
