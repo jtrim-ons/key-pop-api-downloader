@@ -1,4 +1,5 @@
-resident_age_4b
+resident_age_3a
+resident_age_8d
 year_arrival_uk_6a
 country_of_birth_8a
 english_proficiency
