@@ -3,7 +3,7 @@ resident_age_3a
 resident_age_8d
 resident_age_18b
 ethnic_group_tb_6a
-ethnic_group_tb_20a
+ethnic_group_tb_20b
 country_of_birth_3a
 country_of_birth_8a
 country_of_birth_22a
