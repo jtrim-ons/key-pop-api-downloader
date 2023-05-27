@@ -7,7 +7,7 @@ ethnic_group_tb_20b
 country_of_birth_3a
 country_of_birth_8a
 country_of_birth_22a
-residence_length_6a
+residence_length_6b
 main_language_11a
 main_language_23a
 national_identity_all_4a
