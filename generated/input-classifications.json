@@ -1,11 +1,22 @@
 [
-    "resident_age_4b",
-    "year_arrival_uk_6a",
-    "country_of_birth_8a",
-    "english_proficiency",
+    "sex",
+    "resident_age_3a",
+    "resident_age_8d",
+    "resident_age_18b",
     "ethnic_group_tb_6a",
+    "ethnic_group_tb_20b",
+    "country_of_birth_3a",
+    "country_of_birth_8a",
+    "country_of_birth_22a",
+    "residence_length_6b",
     "main_language_11a",
+    "main_language_23a",
+    "national_identity_all_4a",
+    "national_identity_all_9a",
+    "passports_all_4a",
     "passports_all_11a",
+    "passports_all_27a",
+    "english_proficiency",
     "religion_tb",
-    "sex"
+    "disability_4a"
 ]
