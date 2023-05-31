@@ -2,6 +2,7 @@ import copy
 import gzip
 import itertools
 import json
+import os
 import re
 
 from key_pop_api_downloader import *
@@ -19,34 +20,46 @@ input_classifications.sort()
 
 
 def generate_outfile_path(cc, category_list):
-    filename_elements = sum(
-        [[cat_id, opt['id']] for cat_id, opt in zip(cc, category_list)], []
-    )
-    return 'generated/{}var-by-ltla/{}_by_geog.json'.format(
-        len(cc), '-'.join(filename_elements)
-    )
+    if len(cc) == 0:
+        raise "cc should have at least one element."
+
+    directory_names = [cat_id + '-' + opt['id'] for cat_id, opt in zip(cc, category_list)]
+    directory = 'generated/{}var-by-ltla/{}'.format(len(cc), '/'.join(directory_names))
+    os.makedirs(directory, exist_ok=True)
+    return directory + '/' + cc[-1] + '_by_geog.json'
+
+
+def generate_one_dataset(data, cc, category_list):
+    result = {}
+    for ltla in ltlas:
+        datum_key = frozenset(
+            [
+                (cat_id, opt['id'])
+                for cat_id, opt in zip(cc, category_list)
+            ] + [('ltla', ltla)]
+        )
+        if datum_key in data:
+            result[ltla] = data[datum_key]
+        else:
+            result[ltla] = None
+    return result
 
 
 def process_data(data, cc):
     # category_lists is a list of tuples like (1, 4), which means that the first
     # input variable has category 1 and the second input variable
-    # has category 4.
+    # has category 4.  We do this for all but the last element of the list cc.
+    #
+    # For the final variable in cc, we will generate a dataset for
+    # each value and combine these all in a single file.
     category_lists = itertools.product(
-        *(all_classifications[c_]["categories"] for c_ in cc)
+        *(all_classifications[c_]["categories"] for c_ in cc[:-1])
     )
     for category_list in category_lists:
         result = {}
-        for ltla in ltlas:
-            datum_key = frozenset(
-                [
-                    (cat_id, opt['id'])
-                    for cat_id, opt in zip(cc, category_list)
-                ] + [('ltla', ltla)]
-            )
-            if datum_key in data:
-                result[ltla] = data[datum_key]
-            else:
-                result[ltla] = None
+        for last_var_category in all_classifications[cc[-1]]["categories"]:
+            dataset = generate_one_dataset(data, cc, (*category_list, last_var_category))
+            result[last_var_category['id']] = dataset
         with open(generate_outfile_path(cc, category_list), 'w') as f:
             json.dump(result, f)
 
