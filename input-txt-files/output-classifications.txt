@@ -12,7 +12,7 @@ health_in_general
 disability_3a
 is_carer_5a
 english_proficiency
-workplace_travel_5a
+workplace_travel_8a
 transport_to_workplace_12a
 economic_activity_status_4a
 has_ever_worked
