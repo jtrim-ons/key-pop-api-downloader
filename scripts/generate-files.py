@@ -8,6 +8,17 @@ from key_pop_api_downloader import *
 with open('generated/all-classifications.json', 'r') as f:
     all_classifications = json.load(f)
 
+with open('input-txt-files/output-classifications-with-details.json', 'r') as f:
+    output_classification_details = json.load(f)
+for item in output_classification_details:
+    if item["categories"] is None:
+        item["categories"] = [
+            {"label": cat["label"], "cells": [int(cat["id"])]}
+            for cat in all_classifications[item["code"]]["categories"]
+            if cat["id"] != "-8"
+        ]
+output_classification_details_dict = {var["code"]: var for var in output_classification_details}
+
 with open('input-txt-files/output-classifications.txt', 'r') as f:
     output_classifications = f.read().splitlines()
 output_classifications.sort()
@@ -22,12 +33,12 @@ def generate_outfile_path(cc, category_list):
         raise "cc should have at least one element."
 
     directory_names = [cat_id + '-' + opt['id'] for cat_id, opt in zip(cc, category_list)]
-    directory = 'generated/{}var/{}'.format(len(cc), '/'.join(directory_names))
+    directory = 'generated/{}var_percent/{}'.format(len(cc), '/'.join(directory_names))
     os.makedirs(directory, exist_ok=True)
     return directory + '/' + cc[-1] + '.json'
 
 
-def make_datum_key(cc, category_list, c, cat):
+def make_datum_key(cc, category_list, c, cell_id):
     datum_key = frozenset(
         list(
             (classification_id, opt['id'])
@@ -36,7 +47,7 @@ def make_datum_key(cc, category_list, c, cat):
                 remove_classification_number(c) != "resident_age"
                 or remove_classification_number(classification_id) != "resident_age"
             )
-        ) + [(c, cat['id'])]
+        ) + [(c, str(cell_id))]
     )
     return datum_key
 
@@ -48,18 +59,31 @@ def generate_one_dataset(data, cc, category_list):
         if dataset['data']['blocked']:
             result[c] = "blocked"
             continue
-        output_categories = all_classifications[c]['categories']
-        result[c] = {}
+        output_categories = output_classification_details_dict[c]['categories']
+        result[c] = {"count": [], "percent": []}
+        overall_total = 0
         for cat in output_categories:
-            datum_key = make_datum_key(cc, category_list, c, cat)
-            result[c][cat['id']] = dataset['data'][datum_key]
+            for cell in cat['cells']:
+                datum_key = make_datum_key(cc, category_list, c, cell)
+                overall_total += dataset['data'][datum_key]
+        for cat in output_categories:
+            cat_total = 0
+            for cell in cat['cells']:
+                datum_key = make_datum_key(cc, category_list, c, cell)
+                cat_total += dataset['data'][datum_key]
+            result[c]["count"].append(cat_total)
+            if overall_total == 0:
+                result[c]["percent"].append(None)
+            else:
+                result[c]["percent"].append(round(cat_total * 100 / overall_total, 1))
     return result
 
 
 def process_data(data, cc):
     if len(cc) == 0:
         result = generate_one_dataset(data, cc, [])
-        with open('generated/0var/data.json', 'w') as f:
+        os.makedirs('generated/0var_percent', exist_ok=True)
+        with open('generated/0var_percent/data.json', 'w') as f:
             json.dump(result, f)
     else:
         # category_lists is a list of tuples like (1, 4), which means that the first
@@ -109,15 +133,13 @@ def make_c_str(cc, c):
     return len(classifications), ",".join(classifications)
 
 
-for num_vars in range(0, 4):
+# TODO: range(0, 4)
+#for num_vars in range(0, 4):
+for num_vars in range(0, 2):
     input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
         data = []
-        if num_vars > 0:
-            classifications = output_classifications
-        else:
-            classifications = list(set(input_classifications + output_classifications))
-        for j, c in enumerate(classifications):
+        for j, c in enumerate(output_classifications):
             if remove_classification_number(c) != "resident_age" and remove_classification_number(c) in [
                 remove_classification_number(c_) for c_ in cc
             ]:
