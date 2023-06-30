@@ -3,10 +3,16 @@ import itertools
 import json
 import os
 
-from key_pop_api_downloader import *
+from key_pop_api_downloader import remove_classification_number
+from key_pop_api_downloader import get_input_classification_combinations
+from key_pop_api_downloader import age_band_text_to_numbers
 
 with open('generated/all-classifications.json', 'r') as f:
     all_classifications = json.load(f)
+for c in all_classifications:
+    all_classifications[c]["categories_map"] = {
+        cat['id']: cat['label'] for cat in all_classifications[c]['categories']
+    }
 
 with open('input-txt-files/output-classifications-with-details.json', 'r') as f:
     output_classification_details = json.load(f)
@@ -52,6 +58,39 @@ def make_datum_key(cc, category_list, c, cell_id):
     return datum_key
 
 
+def input_age_range(cc, category_list):
+    for i, classification in enumerate(cc):
+        if remove_classification_number(classification) == "resident_age":
+            return age_band_text_to_numbers(category_list[i]["label"])
+    return [0, 999]
+
+
+def nests_nicely(c, input_age_range):
+    if remove_classification_number(c) != "resident_age":
+        return True
+    for category in all_classifications[c]['categories']:
+        age_band = age_band_text_to_numbers(category['label'])
+        if age_band[0] < input_age_range[0] and age_band[1] >= input_age_range[0]:
+            return False
+        if age_band[0] <= input_age_range[1] and age_band[1] > input_age_range[1]:
+            return False
+    return True
+
+
+def sum_of_cell_values(dataset, cc, category_list, c, cell_ids):
+    input_ages = input_age_range(cc, category_list)
+    if not nests_nicely(c, input_ages):
+        return 0
+    total = 0
+    for cell_id in cell_ids:
+        if remove_classification_number(c) == "resident_age":
+            output_ages = age_band_text_to_numbers(all_classifications[c]['categories_map'][str(cell_id)])
+            if output_ages[0] < input_ages[0] or output_ages[1] > input_ages[1]:
+                continue
+        datum_key = make_datum_key(cc, category_list, c, cell_id)
+        total += dataset['data'][datum_key]
+    return total
+
 def generate_one_dataset(data, cc, category_list):
     result = {}
     for dataset in data:
@@ -63,14 +102,9 @@ def generate_one_dataset(data, cc, category_list):
         result[c] = {"count": [], "percent": []}
         overall_total = 0
         for cat in output_categories:
-            for cell in cat['cells']:
-                datum_key = make_datum_key(cc, category_list, c, cell)
-                overall_total += dataset['data'][datum_key]
+            overall_total += sum_of_cell_values(dataset, cc, category_list, c, cat['cells'])
         for cat in output_categories:
-            cat_total = 0
-            for cell in cat['cells']:
-                datum_key = make_datum_key(cc, category_list, c, cell)
-                cat_total += dataset['data'][datum_key]
+            cat_total = sum_of_cell_values(dataset, cc, category_list, c, cat['cells'])
             result[c]["count"].append(cat_total)
             if overall_total == 0:
                 result[c]["percent"].append(None)
@@ -133,9 +167,7 @@ def make_c_str(cc, c):
     return len(classifications), ",".join(classifications)
 
 
-# TODO: range(0, 4)
-#for num_vars in range(0, 4):
-for num_vars in range(0, 2):
+for num_vars in range(0, 4):
     input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
         data = []
