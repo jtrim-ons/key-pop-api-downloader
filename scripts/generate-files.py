@@ -58,6 +58,14 @@ def make_datum_key(cc, category_list, c, cell_id):
     return datum_key
 
 
+def make_datum_key_for_pop_totals(cc, category_list):
+    datum_key = frozenset([
+        (classification_id, opt['id'])
+        for classification_id, opt in zip(cc, category_list)
+    ])
+    return datum_key
+
+
 def input_age_range(cc, category_list):
     for i, classification in enumerate(cc):
         if remove_classification_number(classification) == "resident_age":
@@ -91,7 +99,7 @@ def sum_of_cell_values(dataset, cc, category_list, c, cell_ids):
         total += dataset['data'][datum_key]
     return total
 
-def generate_one_dataset(data, cc, category_list):
+def generate_one_dataset(data, total_pops_data, cc, category_list):
     result = {}
     for dataset in data:
         c = dataset['c']
@@ -100,6 +108,8 @@ def generate_one_dataset(data, cc, category_list):
             continue
         output_categories = output_classification_details_dict[c]['categories']
         result[c] = {"count": [], "percent": []}
+        if len(cc) > 0:
+            result["total_pop"] = total_pops_data[make_datum_key_for_pop_totals(cc, category_list)]
         overall_total = 0
         for cat in output_categories:
             overall_total += sum_of_cell_values(dataset, cc, category_list, c, cat['cells'])
@@ -113,9 +123,9 @@ def generate_one_dataset(data, cc, category_list):
     return result
 
 
-def process_data(data, cc):
+def process_data(data, total_pops_data, cc):
     if len(cc) == 0:
-        result = generate_one_dataset(data, cc, [])
+        result = generate_one_dataset(data, None, cc, [])
         os.makedirs('generated/0var_percent', exist_ok=True)
         with open('generated/0var_percent/data.json', 'w') as f:
             json.dump(result, f)
@@ -132,7 +142,7 @@ def process_data(data, cc):
         for category_list in category_lists:
             result = {}
             for last_var_category in all_classifications[cc[-1]]["categories"]:
-                dataset = generate_one_dataset(data, cc, (*category_list, last_var_category))
+                dataset = generate_one_dataset(data, total_pops_data, cc, (*category_list, last_var_category))
                 result[last_var_category['id']] = dataset
             with open(generate_outfile_path(cc, category_list), 'w') as f:
                 json.dump(result, f)
@@ -167,10 +177,17 @@ def make_c_str(cc, c):
     return len(classifications), ",".join(classifications)
 
 
-for num_vars in range(0, 4):
+def data_from_downloaded_file(filename):
+    with gzip.open(filename, 'r') as f:
+        json_bytes = f.read()
+    return data_to_lookup(json.loads(json_bytes.decode('utf-8')))
+
+
+for num_vars in range(0, 3):
     input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
         data = []
+        total_pops_data = None
         for j, c in enumerate(output_classifications):
             if remove_classification_number(c) != "resident_age" and remove_classification_number(c) in [
                 remove_classification_number(c_) for c_ in cc
@@ -187,10 +204,14 @@ for num_vars in range(0, 4):
             compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(
                 c_str_len-1, c_str.replace(',', '-')
             )
-            with gzip.open(compressed_file_path, 'r') as f:
-                json_bytes = f.read()
             data.append({
                 "c": c,
-                "data": data_to_lookup(json.loads(json_bytes.decode('utf-8')))
+                "data": data_from_downloaded_file(compressed_file_path)
             })
-        process_data(data, cc)
+        if num_vars > 0:
+            # We can get the exact total pop for the categories selected in the web-app.
+            total_pops_compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(
+                num_vars, "-".join(cc)
+            )
+            total_pops_data = data_from_downloaded_file(total_pops_compressed_file_path)
+        process_data(data, total_pops_data, cc)
