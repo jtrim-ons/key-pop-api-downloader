@@ -5,6 +5,7 @@ import json
 import os
 import re
 
+from key_pop_api_downloader import round_fraction
 from key_pop_api_downloader import get_input_classification_combinations
 
 
@@ -40,7 +41,7 @@ def generate_one_dataset(data, ltla_sums, cc, category_list):
         )
         if datum_key in data:
             count = data[datum_key]
-            result[ltla] = [count, round(100 * count / ltla_sums[ltla], 1)]
+            result[ltla] = [count, round_fraction(100 * count, ltla_sums[ltla], 1)]
         else:
             result[ltla] = None
     return result

@@ -3,6 +3,7 @@ import itertools
 import json
 import os
 
+from key_pop_api_downloader import round_fraction
 from key_pop_api_downloader import remove_classification_number
 from key_pop_api_downloader import get_input_classification_combinations
 from key_pop_api_downloader import age_band_text_to_numbers
@@ -119,7 +120,7 @@ def generate_one_dataset(data, total_pops_data, cc, category_list):
             if overall_total == 0:
                 result[c]["percent"].append(None)
             else:
-                result[c]["percent"].append(round(cat_total * 100 / overall_total, 1))
+                result[c]["percent"].append(round_fraction(cat_total * 100, overall_total, 1))
     return result
 
 
