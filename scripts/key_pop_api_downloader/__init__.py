@@ -34,7 +34,24 @@ def age_band_text_to_numbers(age_band_text):
 
 def round_fraction(numerator, denominator, digits=0):
     """ Round a positive fraction to a given number of decimal places,
-        using 'round half up'."""
+        using 'round half up'.
+
+        Parameters:
+          numerator
+          denominator
+          digits      the required number of decimal places
+
+        The return value is an integer if digits=0; otherwise, it is a float.
+        In the latter case, the result may be inaccurate by a tiny amount
+        because of floating-point imprecision.
+
+        Why does it work?  Assuming rounding to zero decimal places:
+             round(p/q)
+           = floor(p/q + 1/2)
+           = floor(2p/2q + q/2q)
+           = floor((2p + q) / 2q)
+           = (2p + q) // 2q       (where // is integer division)
+    """
     if not isinstance(numerator, int):
         raise ValueError(f"Numerator must be an int ({numerator})")
     if not isinstance(denominator, int):
