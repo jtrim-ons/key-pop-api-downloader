@@ -5,9 +5,10 @@ import sys
 import time
 
 from key_pop_api_downloader import get_input_classification_combinations
+from key_pop_api_downloader import get_config
 
 
-url_pattern = "https://api.beta.ons.gov.uk/v1/population-types/UR/census-observations?area-type=ltla&dimensions={}&limit=10000000"
+url_pattern = get_config("input-txt-files/config.json", "ltla_url_pattern")
 
 skip_existing_files = '--skip-existing' in sys.argv
 

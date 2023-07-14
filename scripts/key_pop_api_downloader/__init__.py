@@ -1,7 +1,14 @@
 import itertools
+import json
 import math
 import re
 import unittest
+
+
+def get_config(filename, key):
+    with open(filename, "r") as f:
+        config = json.load(f)
+    return config[key]
 
 
 def remove_classification_number(c):
@@ -139,6 +146,12 @@ class Tests(unittest.TestCase):
                         round_fraction(numerator, denominator, digits),
                         self.rough_round(numerator, denominator, digits)
                     )
+
+    def test_get_config(self):
+        self.assertEqual(
+            get_config("../input-txt-files/config.json", "test_key"),
+            "test_value"
+        )
 
 
 if __name__ == '__main__':
