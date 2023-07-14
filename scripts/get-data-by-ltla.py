@@ -9,7 +9,7 @@ from key_pop_api_downloader import get_input_classification_combinations
 
 url_pattern = "https://api.beta.ons.gov.uk/v1/population-types/UR/census-observations?area-type=ltla&dimensions={}&limit=10000000"
 
-skip_existing_files = sys.argv[1] == '--skip-existing'
+skip_existing_files = '--skip-existing' in sys.argv
 
 with open('input-txt-files/output-classifications.txt', 'r') as f:
     output_classifications = f.read().splitlines()
