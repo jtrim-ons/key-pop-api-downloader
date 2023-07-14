@@ -6,6 +6,19 @@ import re
 import unittest
 
 
+def load_output_classification_details():
+    with open('input-txt-files/output-classifications-with-details.json', 'r') as f:
+        output_classification_details = json.load(f)
+    for item in output_classification_details:
+        if item["categories"] is None:
+            item["categories"] = [
+                {"label": cat["label"], "cells": [int(cat["id"])]}
+                for cat in all_classifications[item["code"]]["categories"]
+                if cat["id"] != "-8"
+            ]
+    return {var["code"]: var for var in output_classification_details}
+
+
 def load_all_classifications():
     with open('generated/all-classifications.json', 'r') as f:
         all_classifications = json.load(f)
