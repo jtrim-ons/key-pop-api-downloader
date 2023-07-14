@@ -6,19 +6,14 @@ import time
 
 from key_pop_api_downloader import get_input_classification_combinations
 from key_pop_api_downloader import get_config
+from key_pop_api_downloader import get_input_and_output_classification_codes
 
 
 url_pattern = get_config("input-txt-files/config.json", "ltla_url_pattern")
 
 skip_existing_files = '--skip-existing' in sys.argv
 
-with open('input-txt-files/output-classifications.txt', 'r') as f:
-    output_classifications = f.read().splitlines()
-output_classifications.sort()
-
-with open('input-txt-files/input-classifications.txt', 'r') as f:
-    input_classifications = f.read().splitlines()
-input_classifications.sort()
+input_classifications, output_classifications = get_input_and_output_classification_codes()
 
 for num_vars in range(1, 4):
     input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)

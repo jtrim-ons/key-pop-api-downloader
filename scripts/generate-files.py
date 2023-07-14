@@ -8,6 +8,7 @@ from key_pop_api_downloader import remove_classification_number
 from key_pop_api_downloader import get_input_classification_combinations
 from key_pop_api_downloader import age_band_text_to_numbers
 from key_pop_api_downloader import generate_outfile_path
+from key_pop_api_downloader import get_input_and_output_classification_codes
 
 with open('generated/all-classifications.json', 'r') as f:
     all_classifications = json.load(f)
@@ -27,13 +28,7 @@ for item in output_classification_details:
         ]
 output_classification_details_dict = {var["code"]: var for var in output_classification_details}
 
-with open('input-txt-files/output-classifications.txt', 'r') as f:
-    output_classifications = f.read().splitlines()
-output_classifications.sort()
-
-with open('input-txt-files/input-classifications.txt', 'r') as f:
-    input_classifications = f.read().splitlines()
-input_classifications.sort()
+input_classifications, output_classifications = get_input_and_output_classification_codes()
 
 
 def make_datum_key(cc, category_list, c, cell_id):
@@ -90,6 +85,7 @@ def sum_of_cell_values(dataset, cc, category_list, c, cell_ids):
         datum_key = make_datum_key(cc, category_list, c, cell_id)
         total += dataset['data'][datum_key]
     return total
+
 
 def generate_one_dataset(data, total_pops_data, cc, category_list):
     result = {}

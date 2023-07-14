@@ -6,12 +6,23 @@ import re
 import unittest
 
 
+def get_input_and_output_classification_codes():
+    with open('input-txt-files/input-classifications.txt', 'r') as f:
+        input_classifications = f.read().splitlines()
+    input_classifications.sort()
+
+    with open('input-txt-files/output-classifications.txt', 'r') as f:
+        output_classifications = f.read().splitlines()
+    output_classifications.sort()
+
+    return input_classifications, output_classifications
+
+
 def generate_outfile_path(cc, category_list, directory_pattern, suffix):
     if len(cc) == 0:
         raise ValueError("cc should have at least one element.")
     if len(cc) != len(category_list) + 1:
         raise ValueError("cc should have one more element than category_list")
-
 
     directory_names = [cat_id + '-' + opt['id'] for cat_id, opt in zip(cc, category_list)]
     directory = directory_pattern.format(len(cc), '/'.join(directory_names))
