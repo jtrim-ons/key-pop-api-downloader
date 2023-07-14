@@ -1,9 +1,7 @@
-import copy
 import gzip
 import itertools
 import json
 import os
-import re
 
 from key_pop_api_downloader import round_fraction
 from key_pop_api_downloader import get_input_classification_combinations
@@ -107,20 +105,3 @@ for num_vars in range(1, 4):
                 if v > 0:
                     f.write('{} {}\n'.format(k, v))
         process_data(data, ltla_sums, cc)
-
-### # Finally, add male and female counts to give total population
-### filenames_by_sex = [
-###     "generated/1var-by-ltla/sex-1_by_geog.json",
-###     "generated/1var-by-ltla/sex-2_by_geog.json"
-### ]
-### totals_filename = 'generated/0var-by-ltla/data_by_geog.json'
-### data_by_sex = []
-### for filename in filenames_by_sex:
-###     with open(filename, 'r') as f:
-###         data = json.load(f)
-###         data_by_sex.append(data)
-### totals = copy.deepcopy(data_by_sex[0])
-### for key in totals:
-###     totals[key] += data_by_sex[1][key]
-### with open(totals_filename, 'w') as f:
-###     json.dump(totals, f)

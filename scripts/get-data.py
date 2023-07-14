@@ -1,7 +1,5 @@
 import gzip
-import itertools
 import os.path
-import re
 import requests
 import sys
 import time

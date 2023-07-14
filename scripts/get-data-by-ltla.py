@@ -1,12 +1,10 @@
 import gzip
-import itertools
 import os.path
-import re
 import requests
 import sys
 import time
 
-from key_pop_api_downloader import *
+from key_pop_api_downloader import get_input_classification_combinations
 
 
 url_pattern = "https://api.beta.ons.gov.uk/v1/population-types/UR/census-observations?area-type=ltla&dimensions={}&limit=10000000"
