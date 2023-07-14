@@ -7,13 +7,13 @@ import time
 from key_pop_api_downloader import remove_classification_number
 from key_pop_api_downloader import get_input_classification_combinations
 from key_pop_api_downloader import get_config
-from key_pop_api_downloader import get_input_and_output_classification_codes
+from key_pop_api_downloader import load_input_and_output_classification_codes
 
 url_pattern = get_config("input-txt-files/config.json", "national_url_pattern")
 
 skip_existing_files = '--skip-existing' in sys.argv
 
-input_classifications, output_classifications = get_input_and_output_classification_codes()
+input_classifications, output_classifications = load_input_and_output_classification_codes()
 
 
 def get_file(compressed_file_path, c_str):

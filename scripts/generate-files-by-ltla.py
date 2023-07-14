@@ -6,7 +6,7 @@ import os
 from key_pop_api_downloader import round_fraction
 from key_pop_api_downloader import get_input_classification_combinations
 from key_pop_api_downloader import generate_outfile_path
-from key_pop_api_downloader import get_input_and_output_classification_codes
+from key_pop_api_downloader import load_input_and_output_classification_codes
 from key_pop_api_downloader import load_all_classifications
 
 
@@ -14,7 +14,7 @@ with open('downloaded/ltla-geog.json', 'r') as f:
     ltlas = [item["id"] for item in json.load(f)["items"]]
 
 all_classifications = load_all_classifications()
-input_classifications, _ = get_input_and_output_classification_codes()
+input_classifications, _ = load_input_and_output_classification_codes()
 
 
 def generate_one_dataset(data, ltla_sums, cc, category_list):

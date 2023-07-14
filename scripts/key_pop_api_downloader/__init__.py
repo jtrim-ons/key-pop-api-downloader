@@ -29,7 +29,7 @@ def load_all_classifications():
     return all_classifications
 
 
-def get_input_and_output_classification_codes():
+def load_input_and_output_classification_codes():
     with open('input-txt-files/input-classifications.txt', 'r') as f:
         input_classifications = f.read().splitlines()
     input_classifications.sort()
