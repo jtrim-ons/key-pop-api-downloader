@@ -9,13 +9,10 @@ from key_pop_api_downloader import get_input_classification_combinations
 from key_pop_api_downloader import age_band_text_to_numbers
 from key_pop_api_downloader import generate_outfile_path
 from key_pop_api_downloader import get_input_and_output_classification_codes
+from key_pop_api_downloader import load_all_classifications
 
-with open('generated/all-classifications.json', 'r') as f:
-    all_classifications = json.load(f)
-for c in all_classifications:
-    all_classifications[c]["categories_map"] = {
-        cat['id']: cat['label'] for cat in all_classifications[c]['categories']
-    }
+all_classifications = load_all_classifications()
+input_classifications, output_classifications = get_input_and_output_classification_codes()
 
 with open('input-txt-files/output-classifications-with-details.json', 'r') as f:
     output_classification_details = json.load(f)
@@ -27,8 +24,6 @@ for item in output_classification_details:
             if cat["id"] != "-8"
         ]
 output_classification_details_dict = {var["code"]: var for var in output_classification_details}
-
-input_classifications, output_classifications = get_input_and_output_classification_codes()
 
 
 def make_datum_key(cc, category_list, c, cell_id):

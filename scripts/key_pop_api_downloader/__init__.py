@@ -6,6 +6,16 @@ import re
 import unittest
 
 
+def load_all_classifications():
+    with open('generated/all-classifications.json', 'r') as f:
+        all_classifications = json.load(f)
+    for c in all_classifications:
+        all_classifications[c]["categories_map"] = {
+            cat['id']: cat['label'] for cat in all_classifications[c]['categories']
+        }
+    return all_classifications
+
+
 def get_input_and_output_classification_codes():
     with open('input-txt-files/input-classifications.txt', 'r') as f:
         input_classifications = f.read().splitlines()
