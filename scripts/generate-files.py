@@ -18,7 +18,7 @@ output_classification_details_dict = load_output_classification_details()
 
 
 def make_datum_key(cc, category_list, c, cell_id):
-    datum_key = frozenset(
+    return frozenset(
         list(
             (classification_id, opt['id'])
             for classification_id, opt in zip(cc, category_list)
@@ -28,15 +28,13 @@ def make_datum_key(cc, category_list, c, cell_id):
             )
         ) + [(c, str(cell_id))]
     )
-    return datum_key
 
 
 def make_datum_key_for_pop_totals(cc, category_list):
-    datum_key = frozenset([
+    return frozenset([
         (classification_id, opt['id'])
         for classification_id, opt in zip(cc, category_list)
     ])
-    return datum_key
 
 
 def input_age_range(cc, category_list):
