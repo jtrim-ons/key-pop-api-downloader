@@ -125,17 +125,15 @@ def process_data(data, total_pops_data, cc):
 def data_to_lookup(data):
     if data["blocked_areas"] != 0:
         return {'blocked': True}
-    lookup = {}
+
+    lookup = {'blocked': False}
     for obs in data['observations']:
         dimensions = []
         for dim in obs['dimensions']:
-            if dim['dimension_id'] == 'nat':
-                # This is the geo dimension, so ignore it
-                continue
-            dimensions.append((dim['dimension_id'], dim['option_id']))
+            if dim['dimension_id'] != 'nat':   # ignore the geo dimension
+                dimensions.append((dim['dimension_id'], dim['option_id']))
         lookup[frozenset(dimensions)] = obs['observation']
 
-    lookup['blocked'] = False
     return lookup
 
 
