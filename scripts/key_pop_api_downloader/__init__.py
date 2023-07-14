@@ -1,8 +1,22 @@
 import itertools
 import json
 import math
+import os
 import re
 import unittest
+
+
+def generate_outfile_path(cc, category_list, directory_pattern, suffix):
+    if len(cc) == 0:
+        raise ValueError("cc should have at least one element.")
+    if len(cc) != len(category_list) + 1:
+        raise ValueError("cc should have one more element than category_list")
+
+
+    directory_names = [cat_id + '-' + opt['id'] for cat_id, opt in zip(cc, category_list)]
+    directory = directory_pattern.format(len(cc), '/'.join(directory_names))
+    os.makedirs(directory, exist_ok=True)
+    return directory + '/' + cc[-1] + suffix
 
 
 def get_config(filename, key):
@@ -153,6 +167,30 @@ class Tests(unittest.TestCase):
             "test_value"
         )
 
+    def test_generate_outfile_path(self):
+        self.assertEqual(
+            generate_outfile_path(
+                ['resident_age_4b', 'sex'],
+                [{"id": "1"}],
+                'generated/{}var-by-ltla/{}',
+                '_by_geog.json'
+            ),
+            "generated/2var-by-ltla/resident_age_4b-1/sex_by_geog.json"
+        )
+        with self.assertRaises(ValueError):
+            generate_outfile_path(
+                [],
+                [],
+                'generated/{}var-by-ltla/{}',
+                '_by_geog.json'
+            )
+        with self.assertRaises(ValueError):
+            generate_outfile_path(
+                ['resident_age_4b', 'sex'],
+                [{"id": "1"}, {"id": "2"}],
+                'generated/{}var-by-ltla/{}',
+                '_by_geog.json'
+            )
 
 if __name__ == '__main__':
     unittest.main()

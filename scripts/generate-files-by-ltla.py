@@ -5,6 +5,7 @@ import os
 
 from key_pop_api_downloader import round_fraction
 from key_pop_api_downloader import get_input_classification_combinations
+from key_pop_api_downloader import generate_outfile_path
 
 
 with open('generated/all-classifications.json', 'r') as f:
@@ -16,16 +17,6 @@ with open('downloaded/ltla-geog.json', 'r') as f:
 with open('input-txt-files/input-classifications.txt', 'r') as f:
     input_classifications = f.read().splitlines()
 input_classifications.sort()
-
-
-def generate_outfile_path(cc, category_list):
-    if len(cc) == 0:
-        raise "cc should have at least one element."
-
-    directory_names = [cat_id + '-' + opt['id'] for cat_id, opt in zip(cc, category_list)]
-    directory = 'generated/{}var-by-ltla/{}'.format(len(cc), '/'.join(directory_names))
-    os.makedirs(directory, exist_ok=True)
-    return directory + '/' + cc[-1] + '_by_geog.json'
 
 
 def generate_one_dataset(data, ltla_sums, cc, category_list):

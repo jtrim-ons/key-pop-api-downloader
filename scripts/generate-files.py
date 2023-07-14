@@ -7,6 +7,7 @@ from key_pop_api_downloader import round_fraction
 from key_pop_api_downloader import remove_classification_number
 from key_pop_api_downloader import get_input_classification_combinations
 from key_pop_api_downloader import age_band_text_to_numbers
+from key_pop_api_downloader import generate_outfile_path
 
 with open('generated/all-classifications.json', 'r') as f:
     all_classifications = json.load(f)
@@ -33,16 +34,6 @@ output_classifications.sort()
 with open('input-txt-files/input-classifications.txt', 'r') as f:
     input_classifications = f.read().splitlines()
 input_classifications.sort()
-
-
-def generate_outfile_path(cc, category_list):
-    if len(cc) == 0:
-        raise "cc should have at least one element."
-
-    directory_names = [cat_id + '-' + opt['id'] for cat_id, opt in zip(cc, category_list)]
-    directory = 'generated/{}var_percent/{}'.format(len(cc), '/'.join(directory_names))
-    os.makedirs(directory, exist_ok=True)
-    return directory + '/' + cc[-1] + '.json'
 
 
 def make_datum_key(cc, category_list, c, cell_id):
@@ -145,7 +136,7 @@ def process_data(data, total_pops_data, cc):
             for last_var_category in all_classifications[cc[-1]]["categories"]:
                 dataset = generate_one_dataset(data, total_pops_data, cc, (*category_list, last_var_category))
                 result[last_var_category['id']] = dataset
-            with open(generate_outfile_path(cc, category_list), 'w') as f:
+            with open(generate_outfile_path(cc, category_list, 'generated/{}var_percent/{}', '.json'), 'w') as f:
                 json.dump(result, f)
 
 
