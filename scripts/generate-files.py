@@ -16,7 +16,7 @@ from key_pop_api_downloader import get_config
 max_var_selections = get_config("input-txt-files/config.json", "max_var_selections")
 all_classifications = load_all_classifications()
 input_classifications, output_classifications = load_input_and_output_classification_codes()
-output_classification_details_dict = load_output_classification_details()
+output_classification_details_dict = load_output_classification_details(all_classifications)
 
 
 def make_datum_key(cc, category_list, c, cell_id):

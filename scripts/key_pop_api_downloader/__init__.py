@@ -6,7 +6,7 @@ import re
 import unittest
 
 
-def load_output_classification_details():
+def load_output_classification_details(all_classifications):
     with open('input-txt-files/output-classifications-with-details.json', 'r') as f:
         output_classification_details = json.load(f)
     for item in output_classification_details:
