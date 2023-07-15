@@ -85,7 +85,7 @@ for num_vars in range(1, max_var_selections + 1):
         print("{} var: Processing {} of {} ({})".format(
             num_vars, i+1, len(input_classification_combinations), c_str)
         )
-        compressed_file_path = 'downloaded/{}var-by-ltla/{}.json.gz'.format(
+        compressed_file_path = 'downloaded/{}var-by-ltla/{}_by_geog.json.gz'.format(
             num_vars, c_str.replace(',', '-')
         )
         with gzip.open(compressed_file_path, 'r') as f:
