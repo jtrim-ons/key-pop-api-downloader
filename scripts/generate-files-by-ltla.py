@@ -52,7 +52,7 @@ def process_data(data, ltla_sums, cc):
         for last_var_category in all_classifications[cc[-1]]["categories"]:
             dataset = generate_one_dataset(data, ltla_sums, cc, (*category_list, last_var_category))
             result[last_var_category['id']] = dataset
-        with open(generate_outfile_path(cc, category_list), 'w') as f:
+        with open(generate_outfile_path(cc, category_list, 'generated/{}var-by-ltla_percent/{}', '_by_geog.json'), 'w') as f:
             json.dump(result, f)
 
 
@@ -85,7 +85,7 @@ for num_vars in range(1, max_var_selections + 1):
         print("{} var: Processing {} of {} ({})".format(
             num_vars, i+1, len(input_classification_combinations), c_str)
         )
-        compressed_file_path = 'downloaded/{}var-by-ltla-percent/{}_by_geog.json.gz'.format(
+        compressed_file_path = 'downloaded/{}var-by-ltla/{}.json.gz'.format(
             num_vars, c_str.replace(',', '-')
         )
         with gzip.open(compressed_file_path, 'r') as f:
