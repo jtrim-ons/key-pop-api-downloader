@@ -10,6 +10,7 @@ from key_pop_api_downloader import get_config
 from key_pop_api_downloader import load_input_and_output_classification_codes
 
 url_pattern = get_config("input-txt-files/config.json", "national_url_pattern")
+max_var_selections = get_config("input-txt-files/config.json", "max_var_selections")
 
 skip_existing_files = '--skip-existing' in sys.argv
 
@@ -30,7 +31,7 @@ def get_file(compressed_file_path, c_str):
 
 
 def main():
-    for num_vars in range(0, 4):
+    for num_vars in range(0, max_var_selections + 1):
         input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
         for i, cc in enumerate(input_classification_combinations):
             if num_vars > 0:

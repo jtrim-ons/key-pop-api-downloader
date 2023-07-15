@@ -8,7 +8,10 @@ from key_pop_api_downloader import get_input_classification_combinations
 from key_pop_api_downloader import generate_outfile_path
 from key_pop_api_downloader import load_input_and_output_classification_codes
 from key_pop_api_downloader import load_all_classifications
+from key_pop_api_downloader import get_config
 
+
+max_var_selections = get_config("input-txt-files/config.json", "max_var_selections")
 
 with open('downloaded/ltla-geog.json', 'r') as f:
     ltlas = [item["id"] for item in json.load(f)["items"]]
@@ -75,7 +78,7 @@ def data_to_lookups(data):
 
 TMP_COUNT = 0
 
-for num_vars in range(1, 4):
+for num_vars in range(1, max_var_selections + 1):
     input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
         c_str = ",".join(cc)

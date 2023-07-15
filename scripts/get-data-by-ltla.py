@@ -11,10 +11,11 @@ from key_pop_api_downloader import load_input_and_output_classification_codes
 
 def main():
     url_pattern = get_config("input-txt-files/config.json", "ltla_url_pattern")
+    max_var_selections = get_config("input-txt-files/config.json", "max_var_selections")
     skip_existing_files = '--skip-existing' in sys.argv
     input_classifications, _ = load_input_and_output_classification_codes()
 
-    for num_vars in range(1, 4):
+    for num_vars in range(1, max_var_selections + 1):
         input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
         for i, cc in enumerate(input_classification_combinations):
             c_str = ",".join(cc)

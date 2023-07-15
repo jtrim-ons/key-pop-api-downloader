@@ -11,7 +11,9 @@ from key_pop_api_downloader import generate_outfile_path
 from key_pop_api_downloader import load_input_and_output_classification_codes
 from key_pop_api_downloader import load_all_classifications
 from key_pop_api_downloader import load_output_classification_details
+from key_pop_api_downloader import get_config
 
+max_var_selections = get_config("input-txt-files/config.json", "max_var_selections")
 all_classifications = load_all_classifications()
 input_classifications, output_classifications = load_input_and_output_classification_codes()
 output_classification_details_dict = load_output_classification_details()
@@ -153,7 +155,7 @@ def data_from_downloaded_file(filename):
     return data_to_lookup(json.loads(json_bytes.decode('utf-8')))
 
 
-for num_vars in range(0, 3):
+for num_vars in range(0, max_var_selections + 1):
     input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
         data = []
