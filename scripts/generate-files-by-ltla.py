@@ -3,21 +3,15 @@ import itertools
 import json
 import os
 
-from key_pop_api_downloader import round_fraction
-from key_pop_api_downloader import get_input_classification_combinations
-from key_pop_api_downloader import generate_outfile_path
-from key_pop_api_downloader import load_input_and_output_classification_codes
-from key_pop_api_downloader import load_all_classifications
-from key_pop_api_downloader import get_config
+import key_pop_api_downloader as pgp
 
-
-max_var_selections = get_config("input-txt-files/config.json", "max_var_selections")
+max_var_selections = pgp.get_config("input-txt-files/config.json", "max_var_selections")
 
 with open('downloaded/ltla-geog.json', 'r') as f:
     ltlas = [item["id"] for item in json.load(f)["items"]]
 
-all_classifications = load_all_classifications()
-input_classifications, _ = load_input_and_output_classification_codes()
+all_classifications = pgp.load_all_classifications()
+input_classifications, _ = pgp.load_input_and_output_classification_codes()
 
 
 def generate_one_dataset(data, ltla_sums, cc, category_list):
@@ -31,7 +25,7 @@ def generate_one_dataset(data, ltla_sums, cc, category_list):
         )
         if datum_key in data:
             count = data[datum_key]
-            result[ltla] = [count, round_fraction(100 * count, ltla_sums[ltla], 1)]
+            result[ltla] = [count, pgp.round_fraction(100 * count, ltla_sums[ltla], 1)]
         else:
             result[ltla] = None
     return result
@@ -52,7 +46,7 @@ def process_data(data, ltla_sums, cc):
         for last_var_category in all_classifications[cc[-1]]["categories"]:
             dataset = generate_one_dataset(data, ltla_sums, cc, (*category_list, last_var_category))
             result[last_var_category['id']] = dataset
-        with open(generate_outfile_path(cc, category_list, 'generated/{}var-by-ltla_percent/{}', '_by_geog.json'), 'w') as f:
+        with open(pgp.generate_outfile_path(cc, category_list, 'generated/{}var-by-ltla_percent/{}', '_by_geog.json'), 'w') as f:
             json.dump(result, f)
 
 
@@ -79,7 +73,7 @@ def data_to_lookups(data):
 TMP_COUNT = 0
 
 for num_vars in range(1, max_var_selections + 1):
-    input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
+    input_classification_combinations = pgp.get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
         c_str = ",".join(cc)
         print("{} var: Processing {} of {} ({})".format(

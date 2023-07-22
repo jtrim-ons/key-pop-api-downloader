@@ -4,19 +4,17 @@ import requests
 import sys
 import time
 
-from key_pop_api_downloader import get_input_classification_combinations
-from key_pop_api_downloader import get_config
-from key_pop_api_downloader import load_input_and_output_classification_codes
+import key_pop_api_downloader as pgp
 
 
 def main():
-    url_pattern = get_config("input-txt-files/config.json", "ltla_url_pattern")
-    max_var_selections = get_config("input-txt-files/config.json", "max_var_selections")
+    url_pattern = pgp.get_config("input-txt-files/config.json", "ltla_url_pattern")
+    max_var_selections = pgp.get_config("input-txt-files/config.json", "max_var_selections")
     skip_existing_files = '--skip-existing' in sys.argv
-    input_classifications, _ = load_input_and_output_classification_codes()
+    input_classifications, _ = pgp.load_input_and_output_classification_codes()
 
     for num_vars in range(1, max_var_selections + 1):
-        input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
+        input_classification_combinations = pgp.get_input_classification_combinations(input_classifications, num_vars)
         for i, cc in enumerate(input_classification_combinations):
             c_str = ",".join(cc)
             compressed_file_path = 'downloaded/{}var-by-ltla/{}_by_geog.json.gz'.format(num_vars, c_str.replace(',', '-'))

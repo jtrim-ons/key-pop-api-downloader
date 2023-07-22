@@ -4,17 +4,14 @@ import requests
 import sys
 import time
 
-from key_pop_api_downloader import remove_classification_number
-from key_pop_api_downloader import get_input_classification_combinations
-from key_pop_api_downloader import get_config
-from key_pop_api_downloader import load_input_and_output_classification_codes
+import key_pop_api_downloader as pgp
 
-url_pattern = get_config("input-txt-files/config.json", "national_url_pattern")
-max_var_selections = get_config("input-txt-files/config.json", "max_var_selections")
+url_pattern = pgp.get_config("input-txt-files/config.json", "national_url_pattern")
+max_var_selections = pgp.get_config("input-txt-files/config.json", "max_var_selections")
 
 skip_existing_files = '--skip-existing' in sys.argv
 
-input_classifications, output_classifications = load_input_and_output_classification_codes()
+input_classifications, output_classifications = pgp.load_input_and_output_classification_codes()
 
 
 def get_file(compressed_file_path, c_str):
@@ -32,14 +29,14 @@ def get_file(compressed_file_path, c_str):
 
 def main():
     for num_vars in range(0, max_var_selections + 1):
-        input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
+        input_classification_combinations = pgp.get_input_classification_combinations(input_classifications, num_vars)
         for i, cc in enumerate(input_classification_combinations):
             if num_vars > 0:
                 c_str = ",".join(cc)
                 compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(num_vars, c_str.replace(',', '-'))
                 get_file(compressed_file_path, c_str)
             for j, c in enumerate(output_classifications):
-                if remove_classification_number(c) in [remove_classification_number(c_) for c_ in cc]:
+                if pgp.remove_classification_number(c) in [pgp.remove_classification_number(c_) for c_ in cc]:
                     # The API won't give data for two versions of the same variable
                     continue
                 c_str = ",".join(list(cc) + [c])

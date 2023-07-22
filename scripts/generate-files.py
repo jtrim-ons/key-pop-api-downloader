@@ -3,20 +3,12 @@ import itertools
 import json
 import os
 
-from key_pop_api_downloader import round_fraction
-from key_pop_api_downloader import remove_classification_number
-from key_pop_api_downloader import get_input_classification_combinations
-from key_pop_api_downloader import age_band_text_to_numbers
-from key_pop_api_downloader import generate_outfile_path
-from key_pop_api_downloader import load_input_and_output_classification_codes
-from key_pop_api_downloader import load_all_classifications
-from key_pop_api_downloader import load_output_classification_details
-from key_pop_api_downloader import get_config
+import key_pop_api_downloader as pgp
 
-max_var_selections = get_config("input-txt-files/config.json", "max_var_selections")
-all_classifications = load_all_classifications()
-input_classifications, output_classifications = load_input_and_output_classification_codes()
-output_classification_details_dict = load_output_classification_details(all_classifications)
+max_var_selections = pgp.get_config("input-txt-files/config.json", "max_var_selections")
+all_classifications = pgp.load_all_classifications()
+input_classifications, output_classifications = pgp.load_input_and_output_classification_codes()
+output_classification_details_dict = pgp.load_output_classification_details(all_classifications)
 
 
 def make_datum_key(cc, category_list, c, cell_id):
@@ -25,8 +17,8 @@ def make_datum_key(cc, category_list, c, cell_id):
             (classification_id, opt['id'])
             for classification_id, opt in zip(cc, category_list)
             if (
-                remove_classification_number(c) != "resident_age"
-                or remove_classification_number(classification_id) != "resident_age"
+                pgp.remove_classification_number(c) != "resident_age"
+                or pgp.remove_classification_number(classification_id) != "resident_age"
             )
         ) + [(c, str(cell_id))]
     )
@@ -41,16 +33,16 @@ def make_datum_key_for_pop_totals(cc, category_list):
 
 def input_age_range(cc, category_list):
     for i, classification in enumerate(cc):
-        if remove_classification_number(classification) == "resident_age":
-            return age_band_text_to_numbers(category_list[i]["label"])
+        if pgp.remove_classification_number(classification) == "resident_age":
+            return pgp.age_band_text_to_numbers(category_list[i]["label"])
     return [0, 999]
 
 
 def nests_nicely(c, input_age_range):
-    if remove_classification_number(c) != "resident_age":
+    if pgp.remove_classification_number(c) != "resident_age":
         return True
     for category in all_classifications[c]['categories']:
-        age_band = age_band_text_to_numbers(category['label'])
+        age_band = pgp.age_band_text_to_numbers(category['label'])
         if age_band[0] < input_age_range[0] and age_band[1] >= input_age_range[0]:
             return False
         if age_band[0] <= input_age_range[1] and age_band[1] > input_age_range[1]:
@@ -64,8 +56,8 @@ def sum_of_cell_values(dataset, cc, category_list, c, cell_ids):
         return 0
     total = 0
     for cell_id in cell_ids:
-        if remove_classification_number(c) == "resident_age":
-            output_ages = age_band_text_to_numbers(all_classifications[c]['categories_map'][str(cell_id)])
+        if pgp.remove_classification_number(c) == "resident_age":
+            output_ages = pgp.age_band_text_to_numbers(all_classifications[c]['categories_map'][str(cell_id)])
             if output_ages[0] < input_ages[0] or output_ages[1] > input_ages[1]:
                 continue
         datum_key = make_datum_key(cc, category_list, c, cell_id)
@@ -93,7 +85,7 @@ def generate_one_dataset(data, total_pops_data, cc, category_list):
             if overall_total == 0:
                 result[c]["percent"].append(None)
             else:
-                result[c]["percent"].append(round_fraction(cat_total * 100, overall_total, 1))
+                result[c]["percent"].append(pgp.round_fraction(cat_total * 100, overall_total, 1))
     return result
 
 
@@ -118,7 +110,7 @@ def process_data(data, total_pops_data, cc):
             for last_var_category in all_classifications[cc[-1]]["categories"]:
                 dataset = generate_one_dataset(data, total_pops_data, cc, (*category_list, last_var_category))
                 result[last_var_category['id']] = dataset
-            with open(generate_outfile_path(cc, category_list, 'generated/{}var_percent/{}', '.json'), 'w') as f:
+            with open(pgp.generate_outfile_path(cc, category_list, 'generated/{}var_percent/{}', '.json'), 'w') as f:
                 json.dump(result, f)
 
 
@@ -143,7 +135,7 @@ def make_c_str(cc, c):
     # then any resident_age input classifications are deleted.
     classifications = []
     for c_ in list(cc):
-        if remove_classification_number(c) != "resident_age" or remove_classification_number(c_) != "resident_age":
+        if pgp.remove_classification_number(c) != "resident_age" or pgp.remove_classification_number(c_) != "resident_age":
             classifications.append(c_)
     classifications.append(c)
     return len(classifications), ",".join(classifications)
@@ -156,13 +148,13 @@ def data_from_downloaded_file(filename):
 
 
 for num_vars in range(0, max_var_selections + 1):
-    input_classification_combinations = get_input_classification_combinations(input_classifications, num_vars)
+    input_classification_combinations = pgp.get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
         data = []
         total_pops_data = None
         for j, c in enumerate(output_classifications):
-            if remove_classification_number(c) != "resident_age" and remove_classification_number(c) in [
-                remove_classification_number(c_) for c_ in cc
+            if pgp.remove_classification_number(c) != "resident_age" and pgp.remove_classification_number(c) in [
+                pgp.remove_classification_number(c_) for c_ in cc
             ]:
                 # The API won't give data for two versions of the same variable.
                 # Since we haven't downloaded it, we can't use it to generate files :-)
