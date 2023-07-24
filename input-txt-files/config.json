@@ -1,5 +1,6 @@
 {
     "test_key":             "test_value",
     "national_url_pattern": "https://api.beta.ons.gov.uk/v1/population-types/UR/census-observations?area-type=nat&dimensions={}&limit=10000000",
-    "ltla_url_pattern":     "https://api.beta.ons.gov.uk/v1/population-types/UR/census-observations?area-type=ltla&dimensions={}&limit=10000000"
+    "ltla_url_pattern":     "https://api.beta.ons.gov.uk/v1/population-types/UR/census-observations?area-type=ltla&dimensions={}&limit=10000000",
+    "max_var_selections":   2
 }
