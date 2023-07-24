@@ -147,6 +147,8 @@ def data_from_downloaded_file(filename):
     return data_to_lookup(json.loads(json_bytes.decode('utf-8')))
 
 
+unblocked_combination_counts = {}
+
 for num_vars in range(0, max_var_selections + 1):
     input_classification_combinations = pgp.get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
@@ -172,6 +174,7 @@ for num_vars in range(0, max_var_selections + 1):
                 "c": c,
                 "data": data_from_downloaded_file(compressed_file_path)
             })
+            unblocked_combination_counts[','.join(cc)] = sum(not d['data']['blocked'] for d in data)
         if num_vars > 0:
             # We can get the exact total pop for the categories selected in the web-app.
             total_pops_compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(
@@ -179,3 +182,6 @@ for num_vars in range(0, max_var_selections + 1):
             )
             total_pops_data = data_from_downloaded_file(total_pops_compressed_file_path)
         process_data(data, total_pops_data, cc)
+
+with open('generated/unblocked-combination-counts.json', 'w') as f:
+    json.dump(unblocked_combination_counts, f)
