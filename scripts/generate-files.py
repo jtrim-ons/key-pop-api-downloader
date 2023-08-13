@@ -52,14 +52,14 @@ def nests_nicely(c, input_age_range):
 
 def sum_of_cell_values(dataset, cc, category_list, c, cell_ids):
     input_ages = input_age_range(cc, category_list)
-    if not nests_nicely(c, input_ages):
-        return 0
+    ## if not nests_nicely(c, input_ages):
+    ##     return 0
     total = 0
     for cell_id in cell_ids:
-        if pgp.remove_classification_number(c) == "resident_age":
-            output_ages = pgp.age_band_text_to_numbers(all_classifications[c]['categories_map'][str(cell_id)])
-            if output_ages[0] < input_ages[0] or output_ages[1] > input_ages[1]:
-                continue
+    ##     if pgp.remove_classification_number(c) == "resident_age":
+    ##         output_ages = pgp.age_band_text_to_numbers(all_classifications[c]['categories_map'][str(cell_id)])
+    ##         if output_ages[0] < input_ages[0] or output_ages[1] > input_ages[1]:
+    ##             continue
         datum_key = make_datum_key(cc, category_list, c, cell_id)
         total += dataset['data'][datum_key]
     return total
