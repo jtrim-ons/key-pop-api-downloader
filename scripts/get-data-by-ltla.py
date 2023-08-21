@@ -1,3 +1,5 @@
+"""Download all LTLA-level data from the API and save to gzipped files."""
+
 import gzip
 import os.path
 import requests
@@ -23,8 +25,7 @@ def main():
                 continue
             print("{} var: Downloading {} of {} ({})".format(num_vars, i+1, len(input_classification_combinations), c_str))
             url = url_pattern.format(c_str)
-            response = requests.get(url, stream=True)
-            response_bytes = response.content
+            response_bytes = requests.get(url, stream=True).content
             with gzip.open(compressed_file_path, 'wb') as f:
                 f.write(response_bytes)
             time.sleep(0.5)
