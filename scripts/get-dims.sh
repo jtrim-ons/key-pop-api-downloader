@@ -1,5 +1,7 @@
 #!/bin/bash
 
+### Download lists of dimensions and classifications for usual residents.
+
 set -euo pipefail
 
 mkdir -p downloaded
@@ -11,6 +13,5 @@ curl -o downloaded/dimensions.json 'https://api.beta.ons.gov.uk/v1/population-ty
 jq '.items[] | .id' downloaded/dimensions.json | tr -d '"' | while read dim; do
     echo $dim
     curl -o downloaded/classifications-$dim.json "https://api.beta.ons.gov.uk/v1/population-types/UR/dimensions/$dim/categorisations"
-    # curl -o downloaded/$dim.json "https://api.beta.ons.gov.uk/v1/population-types/UR/census-observations?area-type=nat&dimensions=$dim"
     sleep 0.8
 done

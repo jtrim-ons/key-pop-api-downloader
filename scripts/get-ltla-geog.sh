@@ -1,5 +1,7 @@
 #!/bin/bash
 
+### Download a list of LTLAs
+
 set -euo pipefail
 
 mkdir -p downloaded
