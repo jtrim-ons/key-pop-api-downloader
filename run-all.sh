@@ -25,5 +25,6 @@ python3 scripts/get-data-by-ltla.py --skip-existing
 
 python3 scripts/generate-files.py
 python3 scripts/generate-files-by-ltla.py
+python3 scripts/combine-jsons-for-bars-and-maps.py
 
 python3 scripts/create-var-code-jsons.py
