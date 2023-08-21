@@ -1,3 +1,5 @@
+"""Generate national-level files from the files already downloaded from the API."""
+
 import gzip
 import itertools
 import json
@@ -129,6 +131,12 @@ def data_to_lookup(data):
     return lookup
 
 
+def data_from_downloaded_file(filename):
+    with gzip.open(filename, 'r') as f:
+        json_bytes = f.read()
+    return data_to_lookup(json.loads(json_bytes.decode('utf-8')))
+
+
 def make_c_str(cc, c):
     # This is used to generate a file name for a list of input classifications and
     # an output classification.  If the output classification is resident_age_23a,
@@ -138,50 +146,49 @@ def make_c_str(cc, c):
         if pgp.remove_classification_number(c) != "resident_age" or pgp.remove_classification_number(c_) != "resident_age":
             classifications.append(c_)
     classifications.append(c)
-    return len(classifications), ",".join(classifications)
+    return len(classifications), "-".join(classifications)
 
 
-def data_from_downloaded_file(filename):
-    with gzip.open(filename, 'r') as f:
-        json_bytes = f.read()
-    return data_to_lookup(json.loads(json_bytes.decode('utf-8')))
-
-
-unblocked_combination_counts = {}
-
-for num_vars in range(0, max_var_selections + 1):
-    input_classification_combinations = pgp.get_input_classification_combinations(input_classifications, num_vars)
-    for i, cc in enumerate(input_classification_combinations):
+def generate_files(num_vars, unblocked_combination_counts):
+    icc = pgp.get_input_classification_combinations(input_classifications, num_vars)
+    for i, cc in enumerate(icc):
         data = []
         total_pops_data = None
-        for j, c in enumerate(output_classifications):
+        for c in output_classifications:
             if pgp.remove_classification_number(c) != "resident_age" and pgp.remove_classification_number(c) in [
-                pgp.remove_classification_number(c_) for c_ in cc
-            ]:
+                    pgp.remove_classification_number(c_) for c_ in cc
+                ]:
                 # The API won't give data for two versions of the same variable.
                 # Since we haven't downloaded it, we can't use it to generate files :-)
                 # The exception is for resident_age, which is a special case where
                 # we just use the data for 23 categories.
                 continue
             c_str_len, c_str = make_c_str(cc, c)
-            print("{} var: Processing {} of {} ({})".format(
-                num_vars, i+1, len(input_classification_combinations), c_str)
-            )
-            compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(
-                c_str_len-1, c_str.replace(',', '-')
-            )
+            print("{} var: Processing {} of {} ({})".format(num_vars, i+1, len(icc), c_str))
+            compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(c_str_len-1, c_str)
             data.append({
-                "c": c,
-                "data": data_from_downloaded_file(compressed_file_path)
-            })
+                    "c": c,
+                    "data": data_from_downloaded_file(compressed_file_path)
+                })
             unblocked_combination_counts[','.join(cc)] = sum(not d['data']['blocked'] for d in data)
         if num_vars > 0:
-            # We can get the exact total pop for the categories selected in the web-app.
+                # We can get the exact total pop for the categories selected in the web-app.
             total_pops_compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(
-                num_vars, "-".join(cc)
-            )
+                    num_vars, "-".join(cc)
+                )
             total_pops_data = data_from_downloaded_file(total_pops_compressed_file_path)
         process_data(data, total_pops_data, cc)
 
-with open('generated/unblocked-combination-counts.json', 'w') as f:
-    json.dump(unblocked_combination_counts, f)
+
+def main():
+    unblocked_combination_counts = {}
+
+    for num_vars in range(0, max_var_selections + 1):
+        generate_files(num_vars, unblocked_combination_counts)
+
+    with open('generated/unblocked-combination-counts.json', 'w') as f:
+        json.dump(unblocked_combination_counts, f)
+
+
+if __name__ == "__main__":
+    main()
