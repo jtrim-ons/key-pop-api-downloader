@@ -131,17 +131,15 @@ def generate_files(num_vars, unblocked_combination_counts):
                 continue
             c_str_len, c_str = make_c_str(cc, c)
             print("{} var: Processing {} of {} ({})".format(num_vars, i+1, len(icc), c_str))
-            compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(c_str_len-1, c_str)
+            file_path = 'downloaded/{}var/{}.json.gz'.format(c_str_len-1, c_str)
             data.append({
                     "c": c,
-                    "data": data_to_lookup(pgp.read_json_gz(compressed_file_path))
+                    "data": data_to_lookup(pgp.read_json_gz(file_path))
                 })
         if num_vars > 0:
-                # We can get the exact total pop for the categories selected in the web-app.
-            total_pops_compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(
-                    num_vars, "-".join(cc)
-                )
-            total_pops_data = data_to_lookup(pgp.read_json_gz(total_pops_compressed_file_path))
+            # We can get the exact total pop for the categories selected in the web-app.
+            total_pops_file_path = 'downloaded/{}var/{}.json.gz'.format(num_vars, "-".join(cc))
+            total_pops_data = data_to_lookup(pgp.read_json_gz(total_pops_file_path))
         process_data(data, total_pops_data, cc)
         unblocked_combination_counts[','.join(cc)] = sum(not d['data']['blocked'] for d in data)
 
