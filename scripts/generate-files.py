@@ -6,10 +6,13 @@ import os
 
 import key_pop_api_downloader as pgp
 
-max_var_selections = pgp.get_config("input-txt-files/config.json", "max_var_selections")
 all_classifications = pgp.load_all_classifications()
 input_classifications, output_classifications = pgp.load_input_and_output_classification_codes()
 output_classification_details_dict = pgp.load_output_classification_details(all_classifications)
+
+
+def is_resident_age(c):
+    return pgp.remove_classification_number(c) == "resident_age"
 
 
 def make_datum_key(cc, category_list, c, cell_id):
@@ -17,10 +20,7 @@ def make_datum_key(cc, category_list, c, cell_id):
         list(
             (classification_id, opt['id'])
             for classification_id, opt in zip(cc, category_list)
-            if (
-                pgp.remove_classification_number(c) != "resident_age"
-                or pgp.remove_classification_number(classification_id) != "resident_age"
-            )
+            if not is_resident_age(c) or not is_resident_age(classification_id)
         ) + [(c, str(cell_id))]
     )
 
@@ -104,10 +104,6 @@ def data_to_lookup(data):
     return lookup
 
 
-def is_resident_age(c):
-    return pgp.remove_classification_number(c) == "resident_age"
-
-
 def make_c_str(cc, c):
     # This is used to generate a file name for a list of input classifications and
     # an output classification.  If the output classification is for resident age,
@@ -153,6 +149,7 @@ def generate_files(num_vars, unblocked_combination_counts):
 def main():
     unblocked_combination_counts = {}
 
+    max_var_selections = pgp.get_config("input-txt-files/config.json", "max_var_selections")
     for num_vars in range(0, max_var_selections + 1):
         generate_files(num_vars, unblocked_combination_counts)
 
