@@ -33,35 +33,9 @@ def make_datum_key_for_pop_totals(cc, category_list):
     ])
 
 
-def input_age_range(cc, category_list):
-    for i, classification in enumerate(cc):
-        if pgp.remove_classification_number(classification) == "resident_age":
-            return pgp.age_band_text_to_numbers(category_list[i]["label"])
-    return [0, 999]
-
-
-def nests_nicely(c, input_age_range):
-    if pgp.remove_classification_number(c) != "resident_age":
-        return True
-    for category in all_classifications[c]['categories']:
-        age_band = pgp.age_band_text_to_numbers(category['label'])
-        if age_band[0] < input_age_range[0] and age_band[1] >= input_age_range[0]:
-            return False
-        if age_band[0] <= input_age_range[1] and age_band[1] > input_age_range[1]:
-            return False
-    return True
-
-
 def sum_of_cell_values(dataset, cc, category_list, c, cell_ids):
-    input_ages = input_age_range(cc, category_list)
-    ## if not nests_nicely(c, input_ages):
-    ##     return 0
     total = 0
     for cell_id in cell_ids:
-    ##     if pgp.remove_classification_number(c) == "resident_age":
-    ##         output_ages = pgp.age_band_text_to_numbers(all_classifications[c]['categories_map'][str(cell_id)])
-    ##         if output_ages[0] < input_ages[0] or output_ages[1] > input_ages[1]:
-    ##             continue
         datum_key = make_datum_key(cc, category_list, c, cell_id)
         total += dataset['data'][datum_key]
     return total
@@ -137,13 +111,17 @@ def data_from_downloaded_file(filename):
     return data_to_lookup(json.loads(json_bytes.decode('utf-8')))
 
 
+def is_resident_age(c):
+    return pgp.remove_classification_number(c) == "resident_age"
+
+
 def make_c_str(cc, c):
     # This is used to generate a file name for a list of input classifications and
-    # an output classification.  If the output classification is resident_age_23a,
+    # an output classification.  If the output classification is for resident age,
     # then any resident_age input classifications are deleted.
     classifications = []
     for c_ in list(cc):
-        if pgp.remove_classification_number(c) != "resident_age" or pgp.remove_classification_number(c_) != "resident_age":
+        if not is_resident_age(c) or not is_resident_age(c_):
             classifications.append(c_)
     classifications.append(c)
     return len(classifications), "-".join(classifications)
@@ -155,13 +133,13 @@ def generate_files(num_vars, unblocked_combination_counts):
         data = []
         total_pops_data = None
         for c in output_classifications:
-            if pgp.remove_classification_number(c) != "resident_age" and pgp.remove_classification_number(c) in [
+            if not is_resident_age(c) and pgp.remove_classification_number(c) in [
                     pgp.remove_classification_number(c_) for c_ in cc
                 ]:
                 # The API won't give data for two versions of the same variable.
                 # Since we haven't downloaded it, we can't use it to generate files :-)
                 # The exception is for resident_age, which is a special case where
-                # we just use the data for 23 categories.
+                # we just use the data for 18 categories.
                 continue
             c_str_len, c_str = make_c_str(cc, c)
             print("{} var: Processing {} of {} ({})".format(num_vars, i+1, len(icc), c_str))
@@ -170,7 +148,6 @@ def generate_files(num_vars, unblocked_combination_counts):
                     "c": c,
                     "data": data_from_downloaded_file(compressed_file_path)
                 })
-            unblocked_combination_counts[','.join(cc)] = sum(not d['data']['blocked'] for d in data)
         if num_vars > 0:
                 # We can get the exact total pop for the categories selected in the web-app.
             total_pops_compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(
@@ -178,6 +155,7 @@ def generate_files(num_vars, unblocked_combination_counts):
                 )
             total_pops_data = data_from_downloaded_file(total_pops_compressed_file_path)
         process_data(data, total_pops_data, cc)
+        unblocked_combination_counts[','.join(cc)] = sum(not d['data']['blocked'] for d in data)
 
 
 def main():
