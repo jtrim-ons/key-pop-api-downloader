@@ -1,6 +1,5 @@
 """Generate national-level files from the files already downloaded from the API."""
 
-import gzip
 import itertools
 import json
 import os
@@ -105,12 +104,6 @@ def data_to_lookup(data):
     return lookup
 
 
-def data_from_downloaded_file(filename):
-    with gzip.open(filename, 'r') as f:
-        json_bytes = f.read()
-    return data_to_lookup(json.loads(json_bytes.decode('utf-8')))
-
-
 def is_resident_age(c):
     return pgp.remove_classification_number(c) == "resident_age"
 
@@ -145,14 +138,14 @@ def generate_files(num_vars, unblocked_combination_counts):
             compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(c_str_len-1, c_str)
             data.append({
                     "c": c,
-                    "data": data_from_downloaded_file(compressed_file_path)
+                    "data": data_to_lookup(pgp.read_json_gz(compressed_file_path))
                 })
         if num_vars > 0:
                 # We can get the exact total pop for the categories selected in the web-app.
             total_pops_compressed_file_path = 'downloaded/{}var/{}.json.gz'.format(
                     num_vars, "-".join(cc)
                 )
-            total_pops_data = data_from_downloaded_file(total_pops_compressed_file_path)
+            total_pops_data = data_to_lookup(pgp.read_json_gz(total_pops_compressed_file_path))
         process_data(data, total_pops_data, cc)
         unblocked_combination_counts[','.join(cc)] = sum(not d['data']['blocked'] for d in data)
 

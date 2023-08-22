@@ -1,3 +1,4 @@
+import gzip
 import itertools
 import json
 import math
@@ -39,6 +40,12 @@ def load_input_and_output_classification_codes():
     output_classifications.sort()
 
     return input_classifications, output_classifications
+
+
+def read_json_gz(filename):
+    with gzip.open(filename, 'r') as f:
+        json_bytes = f.read()
+    return json.loads(json_bytes.decode('utf-8'))
 
 
 def generate_outfile_path(cc, category_list, directory_pattern, suffix):

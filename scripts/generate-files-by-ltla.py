@@ -1,7 +1,5 @@
-import gzip
 import itertools
 import json
-import os
 
 import key_pop_api_downloader as pgp
 
@@ -82,9 +80,7 @@ for num_vars in range(1, max_var_selections + 1):
         compressed_file_path = 'downloaded/{}var-by-ltla/{}_by_geog.json.gz'.format(
             num_vars, c_str.replace(',', '-')
         )
-        with gzip.open(compressed_file_path, 'r') as f:
-            json_bytes = f.read()
-        data, ltla_sums = data_to_lookups(json.loads(json_bytes.decode('utf-8')))
+        data, ltla_sums = data_to_lookups(pgp.read_json_gz(compressed_file_path))
         TMP_COUNT += 1
         with open('generated/TMP-LTLA-POPS/{}.txt'.format(TMP_COUNT), 'w') as f:
             for k, v in ltla_sums.items():
