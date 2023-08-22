@@ -119,11 +119,10 @@ def make_c_str(cc, c):
     # This is used to generate a file name for a list of input classifications and
     # an output classification.  If the output classification is for resident age,
     # then any resident_age input classifications are deleted.
-    classifications = []
-    for c_ in list(cc):
-        if not is_resident_age(c) or not is_resident_age(c_):
-            classifications.append(c_)
-    classifications.append(c)
+    if is_resident_age(c):
+        classifications = [c_ for c_ in list(cc) if not is_resident_age(c_)] + [c]
+    else:
+        classifications = list(cc) + [c]
     return len(classifications), "-".join(classifications)
 
 
