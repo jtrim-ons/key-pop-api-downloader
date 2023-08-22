@@ -68,8 +68,7 @@ def process_data(data, total_pops_data, cc):
     if len(cc) == 0:
         result = generate_one_dataset(data, None, cc, [])
         os.makedirs('generated/0var_percent', exist_ok=True)
-        with open('generated/0var_percent/data.json', 'w') as f:
-            json.dump(result, f)
+        out_filename = 'generated/0var_percent/data.json'
     else:
         # category_lists is a list of tuples like (1, 4), which means that the first
         # input variable has category 1 and the second input variable
@@ -85,8 +84,10 @@ def process_data(data, total_pops_data, cc):
             for last_var_category in all_classifications[cc[-1]]["categories"]:
                 dataset = generate_one_dataset(data, total_pops_data, cc, (*category_list, last_var_category))
                 result[last_var_category['id']] = dataset
-            with open(pgp.generate_outfile_path(cc, category_list, 'generated/{}var_percent/{}', '.json'), 'w') as f:
-                json.dump(result, f)
+            out_filename = pgp.generate_outfile_path(cc, category_list, 'generated/{}var_percent/{}', '.json')
+    
+    with open(out_filename, 'w') as f:
+        json.dump(result, f)
 
 
 def data_to_lookup(data):
