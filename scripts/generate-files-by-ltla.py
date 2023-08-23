@@ -68,8 +68,6 @@ def data_to_lookups(data):
     return lookup, ltla_sums
 
 
-TMP_COUNT = 0
-
 for num_vars in range(1, max_var_selections + 1):
     input_classification_combinations = pgp.get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
@@ -81,9 +79,4 @@ for num_vars in range(1, max_var_selections + 1):
             num_vars, c_str.replace(',', '-')
         )
         data, ltla_sums = data_to_lookups(pgp.read_json_gz(compressed_file_path))
-        TMP_COUNT += 1
-        with open('generated/TMP-LTLA-POPS/{}.txt'.format(TMP_COUNT), 'w') as f:
-            for k, v in ltla_sums.items():
-                if v > 0:
-                    f.write('{} {}\n'.format(k, v))
         process_data(data, ltla_sums, cc)
