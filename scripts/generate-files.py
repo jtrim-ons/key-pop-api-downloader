@@ -40,8 +40,31 @@ def sum_of_cell_values(dataset, cc, category_list, c, cell_ids):
     return total
 
 
+def calc_percent(numerator, denominator):
+    """Return `numerator` divided by `denominator` as a percentage to 1 decimal place.
+
+    If `denominator is zero, return None.
+
+    Parameters
+    ----------
+    numerator : int
+        A non-negative integer
+    denominator : int
+        A positive integer
+
+    Returns
+    -------
+    int or None
+        The percentage, or None if `denominator` is zero.
+    """
+    if denominator == 0:
+        return None
+    return pgp.round_fraction(numerator * 100, denominator, 1)
+
+
 def generate_one_dataset(data, total_pops_data, cc, category_list):
     result = {}
+
     for dataset in data:
         c = dataset['c']
         if dataset['data']['blocked']:
@@ -49,18 +72,17 @@ def generate_one_dataset(data, total_pops_data, cc, category_list):
             continue
         output_categories = output_classification_details_dict[c]['categories']
         result[c] = {"count": [], "percent": []}
-        if len(cc) > 0:
-            result["total_pop"] = total_pops_data[make_datum_key_for_pop_totals(cc, category_list)]
         overall_total = 0
         for cat in output_categories:
             overall_total += sum_of_cell_values(dataset, cc, category_list, c, cat['cells'])
         for cat in output_categories:
             cat_total = sum_of_cell_values(dataset, cc, category_list, c, cat['cells'])
             result[c]["count"].append(cat_total)
-            if overall_total == 0:
-                result[c]["percent"].append(None)
-            else:
-                result[c]["percent"].append(pgp.round_fraction(cat_total * 100, overall_total, 1))
+            result[c]["percent"].append(calc_percent(cat_total, overall_total))
+
+    if len(cc) > 0:
+        result["total_pop"] = total_pops_data[make_datum_key_for_pop_totals(cc, category_list)]
+
     return result
 
 
