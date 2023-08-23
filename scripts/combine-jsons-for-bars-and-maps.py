@@ -1,9 +1,8 @@
-# This script combines pairs of JSON files: for a given set of input variable-values,
-# the file for the bar chart and the file for the map are combined.
+"""This script combines pairs of JSON files: for a given set of input variable-values,
+the file for the bar chart and the file for the map are combined."""
 
 import glob
 import json
-import os
 import key_pop_api_downloader as pgp
 from pathlib import Path
 

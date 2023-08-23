@@ -1,3 +1,5 @@
+"""Convert the input and output classification .txt files to JSON."""
+
 import json
 
 def create_json(input_filename, output_filename):

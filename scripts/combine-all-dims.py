@@ -1,3 +1,5 @@
+"""Create a JSON file with details for all classifications."""
+
 import glob
 import json
 
