@@ -1,18 +1,35 @@
+"""Generate LTLA-level files from the files already downloaded from the API."""
+
 import itertools
 import json
 
 import key_pop_api_downloader as pgp
 
-max_var_selections = pgp.get_config("input-txt-files/config.json", "max_var_selections")
-
 with open('downloaded/ltla-geog.json', 'r') as f:
     ltlas = [item["id"] for item in json.load(f)["items"]]
 
 all_classifications = pgp.load_all_classifications()
-input_classifications, _ = pgp.load_input_and_output_classification_codes()
 
 
 def generate_one_dataset(data, ltla_sums, cc, category_list):
+    """Generate a full dataset (i.e. the counts and percentages for all LTLAs) for a given set of input selections.
+
+    Parameters
+    ----------
+    data : dict
+        The dataset with the input classification combination `cc`
+    ltla_sums : dict
+        The lookup of total LTLA populations
+    cc : list
+        The input classification combination
+    category_list : list
+        The selected input categories, with one for each classification in cc
+
+    Returns
+    -------
+    dict
+        A map from LTLA code to a [count, percentage] pair
+    """
     result = {}
     for ltla in ltlas:
         datum_key = frozenset(
@@ -30,6 +47,17 @@ def generate_one_dataset(data, ltla_sums, cc, category_list):
 
 
 def process_data(data, ltla_sums, cc):
+    """Create all of the files for a give input classification combination.
+
+    Parameters
+    ----------
+    data : list
+        All datasets with the input classification combination `cc`
+    ltla_sums : dict
+        The lookup of total LTLA populations
+    cc : list
+        The input classification combination
+    """
     # category_lists is a list of tuples like (1, 4), which means that the first
     # input variable has category 1 and the second input variable
     # has category 4.  We do this for all but the last element of the list cc.
@@ -50,6 +78,20 @@ def process_data(data, ltla_sums, cc):
 
 
 def data_to_lookups(data):
+    """Produce two lookups from an object that was returned as JSON from the Census API.
+
+    Parameters
+    ----------
+    data : dict
+        A dictionary created from a JSON response from the Census API.
+
+    Returns
+    -------
+    dict, dict
+        The first value is the lookup of counts. Each key is a frozenset whose elements
+        consist of the pair ('ltla', ltla) along with (classification, category) pairs.
+        The second value is a lookup from LTLA code to the total count for that LTLA.
+    """
     lookup = {}
     ltla_sums = {}
     if data['blocked_areas'] == 331:
@@ -69,13 +111,31 @@ def data_to_lookups(data):
     return lookup, ltla_sums
 
 
-for num_vars in range(1, max_var_selections + 1):
+def generate_files(num_vars):
+    """Generate all files with `num_vars` input variables.
+
+    Parameters
+    ----------
+    num_vars : int
+        The number of input variables
+    """
+    input_classifications, _ = pgp.load_input_and_output_classification_codes()
     input_classification_combinations = pgp.get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
         c_str = "-".join(cc)
         print("{} var: Processing {} of {} ({})".format(
-            num_vars, i+1, len(input_classification_combinations), c_str)
-        )
+                num_vars, i+1, len(input_classification_combinations), c_str)
+            )
         compressed_file_path = 'downloaded/{}var-by-ltla/{}_by_geog.json.gz'.format(num_vars, c_str)
         data, ltla_sums = data_to_lookups(pgp.read_json_gz(compressed_file_path))
         process_data(data, ltla_sums, cc)
+
+
+def main():
+    max_var_selections = pgp.get_config("input-txt-files/config.json", "max_var_selections")
+    for num_vars in range(1, max_var_selections + 1):
+        generate_files(num_vars)
+
+
+if __name__ == "__main__":
+    main()
