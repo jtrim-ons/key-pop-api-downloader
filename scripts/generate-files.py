@@ -12,10 +12,29 @@ output_classification_details_dict = pgp.load_output_classification_details(all_
 
 
 def is_resident_age(c):
+    """Return true if and only if c is a resident_age classification."""
     return pgp.remove_classification_number(c) == "resident_age"
 
 
 def make_datum_key(cc, category_list, c, cell_id):
+    """Return a key for looking up a count.
+
+    Parameters
+    ----------
+    cc : list
+        The input classification combination
+    category_list : list
+        The selected input categories, with one for each classification in cc
+    c : str
+        The output classification
+    cell_id : int
+        The output cell ID
+
+    Returns
+    -------
+    frozenset
+        The key
+    """
     return frozenset(
         list(
             (classification_id, opt['id'])
@@ -26,6 +45,20 @@ def make_datum_key(cc, category_list, c, cell_id):
 
 
 def make_datum_key_for_pop_totals(cc, category_list):
+    """Return a key for looking up a population total
+
+    Parameters
+    ----------
+    cc : list
+        The input classification combination
+    category_list : list
+        The selected input categories, with one for each classification in cc
+
+    Returns
+    -------
+    frozenset
+        The key
+    """
     return frozenset([
         (classification_id, opt['id'])
         for classification_id, opt in zip(cc, category_list)
@@ -33,6 +66,26 @@ def make_datum_key_for_pop_totals(cc, category_list):
 
 
 def sum_of_cell_values(dataset, cc, category_list, c, cell_ids):
+    """For a given set of input categories and a given output category, return the sum of counts in that output category.
+
+    Parameters
+    ----------
+    dataset : dict
+        The dataset corresponding to input classifications `cc` and output classification `c`
+    cc : list
+        The input classification combination
+    category_list : list
+        The selected input categories, with one for each classification in cc
+    c : str
+        The output classification
+    cell_ids : list
+        The output cell IDs
+
+    Returns
+    -------
+    int
+        The total of the counts.
+    """
     total = 0
     for cell_id in cell_ids:
         datum_key = make_datum_key(cc, category_list, c, cell_id)
@@ -63,6 +116,26 @@ def calc_percent(numerator, denominator):
 
 
 def generate_one_dataset(data, total_pops_data, cc, category_list):
+    """Generate a full dataset (i.e. the data for all charts) for a given set of input selections.
+
+    The dataset also has an element for total population if cc is non-empty.
+
+    Parameters
+    ----------
+    data : list
+        All datasets with the input classification combination `cc`
+    total_pops_data : dict
+        The lookup of total populations
+    cc : list
+        The input classification combination
+    category_list : list
+        The selected input categories, with one for each classification in cc
+
+    Returns
+    -------
+    dict
+        The dataset, with one element for each output variable.
+    """
     result = {}
 
     for dataset in data:
@@ -87,6 +160,17 @@ def generate_one_dataset(data, total_pops_data, cc, category_list):
 
 
 def process_data(data, total_pops_data, cc):
+    """Create all of the files for a give input classification combination
+
+    Parameters
+    ----------
+    data : list
+        All datasets with the input classification combination `cc`
+    total_pops_data : dict
+        The lookup of total populations
+    cc : list
+        The input classification combination
+    """
     if len(cc) == 0:
         result = generate_one_dataset(data, None, cc, [])
         os.makedirs('generated/0var_percent', exist_ok=True)
@@ -107,12 +191,25 @@ def process_data(data, total_pops_data, cc):
                 dataset = generate_one_dataset(data, total_pops_data, cc, (*category_list, last_var_category))
                 result[last_var_category['id']] = dataset
             out_filename = pgp.generate_outfile_path(cc, category_list, 'generated/{}var_percent/{}', '.json')
-    
+
     with open(out_filename, 'w') as f:
         json.dump(result, f)
 
 
 def data_to_lookup(data):
+    """Produce a lookup from an object that was returned as JSON from the Census API.
+
+    Parameters
+    ----------
+    data : dict
+        A dictionary created from a JSON response from the Census API.
+
+    Returns
+    -------
+    dict
+        A dictionary, where the keys are frozensets of (classification, category) pairs
+        and the values are counts.
+    """
     if data["blocked_areas"] != 0:
         return {'blocked': True}
 
@@ -128,6 +225,19 @@ def data_to_lookup(data):
 
 
 def make_c_str(cc, c):
+    """Generate a file name for a list of input classifications and an output classification.
+
+    Parameters
+    ----------
+    cc : list
+        The input classifications
+    c : str
+        The output classification
+
+    Returns
+    -------
+    The number of classifications, and the filename.
+    """
     # This is used to generate a file name for a list of input classifications and
     # an output classification.  If the output classification is for resident age,
     # then any resident_age input classifications are deleted.
@@ -139,6 +249,17 @@ def make_c_str(cc, c):
 
 
 def generate_files(num_vars, unblocked_combination_counts):
+    """Generate all files with `num_vars` input variables.
+
+    The number of unblocked variables will be saved to the dictionary `unblocked_combination_counts`.
+
+    Parameters
+    ----------
+    num_vars : int
+        The number of input variables
+    unblocked_combination_counts : dict
+        A dictionary to which the number of unblocked output variables for each input variable will be saved
+    """
     icc = pgp.get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(icc):
         data = []
@@ -156,9 +277,9 @@ def generate_files(num_vars, unblocked_combination_counts):
             print("{} var: Processing {} of {} ({})".format(num_vars, i+1, len(icc), c_str))
             file_path = 'downloaded/{}var/{}.json.gz'.format(c_str_len-1, c_str)
             data.append({
-                    "c": c,
-                    "data": data_to_lookup(pgp.read_json_gz(file_path))
-                })
+                "c": c,
+                "data": data_to_lookup(pgp.read_json_gz(file_path))
+            })
         if num_vars > 0:
             # We can get the exact total pop for the categories selected in the web-app.
             total_pops_file_path = 'downloaded/{}var/{}.json.gz'.format(num_vars, "-".join(cc))
@@ -168,6 +289,9 @@ def generate_files(num_vars, unblocked_combination_counts):
 
 
 def main():
+    # For each combination of input variables (as a comma-separated string),
+    # unblocked_combination_counts stores the number of output variables whose
+    # data is not blocked.
     unblocked_combination_counts = {}
 
     max_var_selections = pgp.get_config("input-txt-files/config.json", "max_var_selections")
