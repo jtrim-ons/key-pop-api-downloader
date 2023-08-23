@@ -71,12 +71,10 @@ def data_to_lookups(data):
 for num_vars in range(1, max_var_selections + 1):
     input_classification_combinations = pgp.get_input_classification_combinations(input_classifications, num_vars)
     for i, cc in enumerate(input_classification_combinations):
-        c_str = ",".join(cc)
+        c_str = "-".join(cc)
         print("{} var: Processing {} of {} ({})".format(
             num_vars, i+1, len(input_classification_combinations), c_str)
         )
-        compressed_file_path = 'downloaded/{}var-by-ltla/{}_by_geog.json.gz'.format(
-            num_vars, c_str.replace(',', '-')
-        )
+        compressed_file_path = 'downloaded/{}var-by-ltla/{}_by_geog.json.gz'.format(num_vars, c_str)
         data, ltla_sums = data_to_lookups(pgp.read_json_gz(compressed_file_path))
         process_data(data, ltla_sums, cc)
