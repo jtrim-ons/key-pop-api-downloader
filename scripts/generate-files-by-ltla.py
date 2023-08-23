@@ -44,7 +44,8 @@ def process_data(data, ltla_sums, cc):
         for last_var_category in all_classifications[cc[-1]]["categories"]:
             dataset = generate_one_dataset(data, ltla_sums, cc, (*category_list, last_var_category))
             result[last_var_category['id']] = dataset
-        with open(pgp.generate_outfile_path(cc, category_list, 'generated/{}var-by-ltla_percent/{}', '_by_geog.json'), 'w') as f:
+        filename = pgp.generate_outfile_path(cc, category_list, 'generated/{}var-by-ltla_percent/{}', '_by_geog.json')
+        with open(filename, 'w') as f:
             json.dump(result, f)
 
 
