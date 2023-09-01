@@ -154,7 +154,15 @@ def generate_one_dataset(data, total_pops_data, cc, category_list):
             result[c]["percent"].append(calc_percent(cat_total, overall_total))
 
     if len(cc) > 0:
-        result["total_pop"] = total_pops_data[make_datum_key_for_pop_totals(cc, category_list)]
+        if total_pops_data['blocked']:
+            result["total_pop"] = [None, None]
+        else:
+            total_pop = total_pops_data[make_datum_key_for_pop_totals(cc, category_list)]
+            total_pop_pct = calc_percent(
+                total_pop,
+                total_pops_data['total_of_counts']
+            )
+            result["total_pop"] = {'count': total_pop, 'percent': total_pop_pct}
 
     return result
 
@@ -214,13 +222,14 @@ def data_to_lookup(data):
     if data["blocked_areas"] != 0:
         return {'blocked': True}
 
-    lookup = {'blocked': False}
+    lookup = {'blocked': False, 'total_of_counts': 0}
     for obs in data['observations']:
         dimensions = []
         for dim in obs['dimensions']:
             if dim['dimension_id'] != 'nat':   # ignore the geo dimension
                 dimensions.append((dim['dimension_id'], dim['option_id']))
         lookup[frozenset(dimensions)] = obs['observation']
+        lookup['total_of_counts'] += obs['observation']
 
     return lookup
 
