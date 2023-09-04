@@ -155,7 +155,7 @@ def generate_one_dataset(data, total_pops_data, cc, category_list):
 
     if len(cc) > 0:
         if total_pops_data['blocked']:
-            result["total_pop"] = [None, None]
+            result["total_pop"] = {'count': None, 'percent': None}
         else:
             total_pop = total_pops_data[make_datum_key_for_pop_totals(cc, category_list)]
             total_pop_pct = calc_percent(
