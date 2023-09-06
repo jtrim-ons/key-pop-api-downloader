@@ -41,8 +41,6 @@ def generate_one_dataset(data, ltla_sums, cc, category_list):
         if datum_key in data:
             count = data[datum_key]
             result[ltla] = [count, pgp.round_fraction(100 * count, ltla_sums[ltla], 1)]
-        else:
-            result[ltla] = None
     return result
 
 
