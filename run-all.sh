@@ -15,16 +15,16 @@ for d in downloaded generated; do
     mkdir -p $d/3var-by-ltla
 done
 
-./scripts/get-ltla-geog.sh
+./bash-scripts/get-ltla-geog.sh
 
-./scripts/get-dims.sh
-python3 scripts/combine-all-dims.py
+./bash-scripts/get-dims.sh
+python3 python-scripts/combine-all-dims.py
 
-python3 scripts/get-data.py --skip-existing
-python3 scripts/get-data-by-ltla.py --skip-existing
+python3 python-scripts/get-data.py --skip-existing
+python3 python-scripts/get-data-by-ltla.py --skip-existing
 
-python3 scripts/generate-files.py
-python3 scripts/generate-files-by-ltla.py
-python3 scripts/combine-jsons-for-bars-and-maps.py
+python3 python-scripts/generate-files.py
+python3 python-scripts/generate-files-by-ltla.py
+python3 python-scripts/combine-jsons-for-bars-and-maps.py
 
-python3 scripts/create-var-code-jsons.py
+python3 python-scripts/create-var-code-jsons.py
